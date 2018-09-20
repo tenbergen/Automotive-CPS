@@ -11,7 +11,7 @@ sourceCompatibility = '1.8'
 // prefer. In this case NetBeans will not add these tasks but you may rely on
 // your own implementation.
 if (!hasProperty('mainClass')) {
-    ext.mainClass = 'edu.oswego.cs.CPSLab.Test'
+    ext.mainClass = 'edu.oswego.cs.CPSLab.anki.MovementDemo'
 }
 
 repositories {
@@ -27,7 +27,18 @@ dependencies {
     // You can read more about how to add dependency here:
     //   http://www.gradle.org/docs/current/userguide/dependency_management.html#sec:how_to_declare_your_dependencies
     testCompile group: 'junit', name: 'junit', version: '4.10'
+    //compile 'com.github.tenbergen:anki-drive-java:master-SNAPSHOT'
+    //implementation 'com.github.tenbergen:anki-drive-java:master-SNAPSHOT'
     compile 'com.github.adessoAG:anki-drive-java:v0.1.0'
     implementation 'com.github.adessoAG:anki-drive-java:v0.1.0'
 }
 
+task installLibUdev(type:Exec) {
+    commandLine 'sudo apt-get install libudev-dev'
+}
+
+installLibUdev.onlyIf { org.gradle.nativeplatform.platform.OperatingSystem.isLinux() }
+
+build.doFirst {
+    installLibUdev
+}

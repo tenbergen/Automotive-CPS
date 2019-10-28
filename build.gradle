@@ -27,6 +27,7 @@ dependencies {
     // You can read more about how to add dependency here:
     //   http://www.gradle.org/docs/current/userguide/dependency_management.html#sec:how_to_declare_your_dependencies
     testCompile group: 'junit', name: 'junit', version: '4.10'
+//    compile 'com.github.tenbergen:anki-drive-java:0.1.2'
     compile 'com.github.tenbergen:anki-drive-java:-SNAPSHOT'
     implementation 'com.github.tenbergen:anki-drive-java:-SNAPSHOT'
    // compile 'com.github.adessoAG:anki-drive-java:v0.1.0'

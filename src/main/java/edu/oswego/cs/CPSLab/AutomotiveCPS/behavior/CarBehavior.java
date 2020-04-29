@@ -1,7 +1,7 @@
 /*
  * Class that includes all behaviors
  */
-package edu.oswego.cs.CPSLab.anki;
+package edu.oswego.cs.CPSLab.AutomotiveCPS.behavior;
 
 import de.adesso.anki.MessageListener;
 import de.adesso.anki.Vehicle;

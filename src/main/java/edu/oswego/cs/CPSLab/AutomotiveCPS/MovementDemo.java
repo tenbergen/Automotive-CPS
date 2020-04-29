@@ -1,21 +1,13 @@
-package edu.oswego.cs.CPSLab.anki;
+package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.MessageListener;
 import de.adesso.anki.RoadmapScanner;
 import de.adesso.anki.Vehicle;
-import de.adesso.anki.messages.BatteryLevelRequestMessage;
-import de.adesso.anki.messages.BatteryLevelResponseMessage;
-import de.adesso.anki.messages.LightsPatternMessage;
-import de.adesso.anki.messages.LightsPatternMessage.LightConfig;
 import de.adesso.anki.messages.LocalizationPositionUpdateMessage;
-import de.adesso.anki.messages.PingRequestMessage;
-import de.adesso.anki.messages.PingResponseMessage;
 import de.adesso.anki.messages.SdkModeMessage;
-import de.adesso.anki.messages.SetSpeedMessage;
-import de.adesso.anki.messages.TurnMessage;
+
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Scanner;
 

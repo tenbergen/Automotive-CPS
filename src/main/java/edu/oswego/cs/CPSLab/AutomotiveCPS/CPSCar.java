@@ -1,21 +1,21 @@
-package edu.oswego.cs.CPSLab.anki;
+package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
-import de.adesso.anki.AdvertisementData;
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.MessageListener;
 import de.adesso.anki.Vehicle;
 import de.adesso.anki.messages.LocalizationPositionUpdateMessage;
 import de.adesso.anki.messages.Message;
 import de.adesso.anki.messages.SetOffsetFromRoadCenterMessage;
-import de.adesso.anki.messages.SetSpeedMessage;
 import de.adesso.anki.roadmap.Section;
-import de.adesso.anki.roadmap.roadpieces.Roadpiece;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.EmergencyStop;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.Follow;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Map;
+
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;

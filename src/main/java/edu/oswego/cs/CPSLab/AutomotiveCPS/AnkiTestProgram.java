@@ -1,4 +1,4 @@
-package edu.oswego.cs.CPSLab.anki;
+package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.MessageListener;
@@ -20,6 +20,7 @@ import de.adesso.anki.roadmap.roadpieces.FinishRoadpiece;
 import de.adesso.anki.roadmap.roadpieces.Roadpiece;
 import de.adesso.anki.roadmap.roadpieces.StartRoadpiece;
 import de.adesso.anki.roadmap.roadpieces.StraightRoadpiece;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -94,7 +95,7 @@ public class AnkiTestProgram {
             PingResponseHandler prh = new PingResponseHandler();
             v1.addMessageListener(PingResponseMessage.class, prh);
             v2.addMessageListener(PingResponseMessage.class, prh);
-            AnkiConnectionTest.pingSentAt = System.currentTimeMillis();
+            edu.oswego.cs.CPSLab.AutomotiveCPS.AnkiConnectionTest.pingSentAt = System.currentTimeMillis();
             v1.sendMessage(new PingRequestMessage());
             v2.sendMessage(new PingRequestMessage());
 
@@ -397,8 +398,8 @@ public class AnkiTestProgram {
 
         @Override
         public void messageReceived(PingResponseMessage m) {
-            AnkiConnectionTest.pingReceivedAt = System.currentTimeMillis();
-            System.out.println("   Ping response received. Roundtrip: " + (AnkiConnectionTest.pingReceivedAt - AnkiConnectionTest.pingSentAt) + " msec.");
+            edu.oswego.cs.CPSLab.AutomotiveCPS.AnkiConnectionTest.pingReceivedAt = System.currentTimeMillis();
+            System.out.println("   Ping response received. Roundtrip: " + (edu.oswego.cs.CPSLab.AutomotiveCPS.AnkiConnectionTest.pingReceivedAt - AnkiConnectionTest.pingSentAt) + " msec.");
         }
     }
 

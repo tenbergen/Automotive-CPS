@@ -63,7 +63,7 @@ public class CPSCar {
 //        lpuh = new LocalizationPositionUpdateHandler();
 //        v.addMessageListener(LocalizationPositionUpdateMessage.class, lpuh);
 //        v.sendMessage(new LocalizationPositionUpdateMessage());
-//
+//        
 //        Thread t = new Thread(new PositionUpdater());
 //        t.start();
 //    }
@@ -86,7 +86,7 @@ public class CPSCar {
         follow = new Follow(this);
         emergStop = new EmergencyStop(this);
         over = new Overtake(this);
-
+        
 //        try {
 //            while (true) publisher.multicast("Hello! The Multicast was sent by " + id);
 //        } catch (Exception e){
@@ -367,14 +367,14 @@ public class CPSCar {
         }
     }
 
-    //disconnect - stop the thread
+//disconnect - stop the thread
     public void disconnect() throws InterruptedException {
         v.disconnect();
         t.join();
         receiver.stopMC();
     }
 
-//
+//    
 //    public static void main(String[] args){
 //        CPSCar c1 = new CPSCar(null, null, "Car 1");
 //    }

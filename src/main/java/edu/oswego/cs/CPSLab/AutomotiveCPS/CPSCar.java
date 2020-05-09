@@ -51,7 +51,7 @@ public class CPSCar {
 
     private Follow follow;
     private EmergencyStop emergStop;
-    private Overtake over;
+ //   private Overtake over;
 
     /**
      * Creates a new CPS car by simply calling the constructor of the super
@@ -85,7 +85,7 @@ public class CPSCar {
         publisher = new MulticastPublisher();
         follow = new Follow(this);
         emergStop = new EmergencyStop(this);
-        over = new Overtake(this);
+  //      over = new Overtake(this);
         
 //        try {
 //            while (true) publisher.multicast("Hello! The Multicast was sent by " + id);
@@ -240,7 +240,7 @@ public class CPSCar {
         if (virtualId != -1) {
             follow.updateInfo();
             emergStop.updateInfo();
-            over.updateInfo();
+    //        over.updateInfo();
             String position = v.getAddress() + " " + virtualId + " " + locationId + " " + prevId + " " + prevLocationId + " " + reverse + " " + speed + " " + offset;
             publisher.multicast(position);
             // System.out.println(position);
@@ -327,12 +327,12 @@ public class CPSCar {
                     }
                     System.out.println(Arrays.toString(parsed) + " was received by " + id);
                     follow.follow(received);
-                    try {
+         /*           try {
                         over.overtake(received);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    emergStop.emergStop(received);
+           */         emergStop.emergStop(received);
                     if ("end".equals(received)) {
                         break;
                     }

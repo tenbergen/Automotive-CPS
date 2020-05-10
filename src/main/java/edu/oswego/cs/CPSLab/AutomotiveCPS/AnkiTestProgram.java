@@ -95,7 +95,7 @@ public class AnkiTestProgram {
             PingResponseHandler prh = new PingResponseHandler();
             v1.addMessageListener(PingResponseMessage.class, prh);
             v2.addMessageListener(PingResponseMessage.class, prh);
-            edu.oswego.cs.CPSLab.AutomotiveCPS.AnkiConnectionTest.pingSentAt = System.currentTimeMillis();
+            long pingSentAt = System.currentTimeMillis();
             v1.sendMessage(new PingRequestMessage());
             v2.sendMessage(new PingRequestMessage());
 
@@ -398,8 +398,8 @@ public class AnkiTestProgram {
 
         @Override
         public void messageReceived(PingResponseMessage m) {
-            edu.oswego.cs.CPSLab.AutomotiveCPS.AnkiConnectionTest.pingReceivedAt = System.currentTimeMillis();
-            System.out.println("   Ping response received. Roundtrip: " + (edu.oswego.cs.CPSLab.AutomotiveCPS.AnkiConnectionTest.pingReceivedAt - AnkiConnectionTest.pingSentAt) + " msec.");
+            long pingReceivedAt = System.currentTimeMillis();
+            System.out.println("   Ping response received. Roundtrip: " + (pingReceivedAt - pingSentAt) + " msec.");
         }
     }
 

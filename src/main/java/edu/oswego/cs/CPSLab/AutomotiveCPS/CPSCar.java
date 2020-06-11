@@ -1,22 +1,31 @@
 package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Map;
+import de.adesso.anki.AdvertisementData;
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.MessageListener;
+import de.adesso.anki.RoadmapScanner;
 import de.adesso.anki.Vehicle;
 import de.adesso.anki.messages.LocalizationPositionUpdateMessage;
+import de.adesso.anki.messages.LocalizationTransitionUpdateMessage;
 import de.adesso.anki.messages.Message;
+import de.adesso.anki.messages.SdkModeMessage;
 import de.adesso.anki.messages.SetOffsetFromRoadCenterMessage;
+import de.adesso.anki.messages.SetSpeedMessage;
 import de.adesso.anki.roadmap.Section;
+import de.adesso.anki.roadmap.Roadmap;
+import de.adesso.anki.roadmap.roadpieces.Roadpiece;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.EmergencyStop;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.Follow;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Map;
-
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.Overtake;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -31,10 +40,10 @@ import java.util.logging.Logger;
 public class CPSCar {
 
     private Vehicle v;
-    private AnkiConnector anki;
     private Map map;
     private List<String> cars;
-    private List<Vehicle> vehicles;
+    private List<Long> time;
+    private Date date;
     private MulticastReceiver receiver;
     private MulticastPublisher publisher;
     private LocalizationPositionUpdateHandler lpuh;
@@ -49,9 +58,12 @@ public class CPSCar {
     private int prevId;
     private Section section;
 
+    private RoadmapScanner scan;
+    private boolean scanStarted;
+    private ArrayList<Integer> pieceIDs;
     private Follow follow;
     private EmergencyStop emergStop;
- //   private Overtake over;
+    private Overtake over;
 
     /**
      * Creates a new CPS car by simply calling the constructor of the super
@@ -67,17 +79,18 @@ public class CPSCar {
 //        Thread t = new Thread(new PositionUpdater());
 //        t.start();
 //    }
-    public CPSCar(Vehicle v, AnkiConnector anki, Map map, float offset) {
+    public CPSCar(Vehicle v) {
         this.v = v;
         v.connect();
-        this.anki = anki;
-        this.map = map;
         virtualId = -1;
         lpuh = new LocalizationPositionUpdateHandler();
         v.addMessageListener(LocalizationPositionUpdateMessage.class, lpuh);
         v.sendMessage(new LocalizationPositionUpdateMessage());
         v.sendMessage(new SetOffsetFromRoadCenterMessage(offset));
 
+        cars = new ArrayList<String>();
+        time = new ArrayList<Long>();
+        date = new Date();
         t = new Thread(new PositionUpdater());
         t.start();
         Thread receiver = new Thread(new MulticastReceiver(v.getAdvertisement().getModel().name()));
@@ -85,17 +98,20 @@ public class CPSCar {
         publisher = new MulticastPublisher();
         follow = new Follow(this);
         emergStop = new EmergencyStop(this);
-  //      over = new Overtake(this);
-        
+        over = new Overtake(this);
+
+        scan = new RoadmapScanner(v);
+        scanStarted = false;
+        pieceIDs = new ArrayList<Integer>();
+
+        v.sendMessage(new SdkModeMessage());
+        v.sendMessage(new SetSpeedMessage(400, 400));
+
 //        try {
 //            while (true) publisher.multicast("Hello! The Multicast was sent by " + id);
 //        } catch (Exception e){
 //            System.out.println("meh..." + e.getMessage());
 //        }
-    }
-
-    public AnkiConnector getAnkiConnector() {
-        return this.anki;
     }
 
     public Map getMap() {
@@ -138,43 +154,6 @@ public class CPSCar {
         return section;
     }
 
-    /**
-     * Broadcasts a search for other CPSCars.
-     */
-    public void findVehicles() {
-        List<Vehicle> vehicles = anki.findVehicles();
-        for (Vehicle veh : vehicles) {
-            if (veh.getAddress() == v.getAddress()) {
-                vehicles.remove(veh);
-            }
-        }
-        this.vehicles = vehicles;
-    }
-
-    public void updateVehicleNetwork() {
-        List<Vehicle> update = anki.findVehicles();
-        boolean exist = false;
-        for (Vehicle veh : vehicles) {
-            if (veh.getAddress() == v.getAddress()) {
-                vehicles.remove(veh);
-            }
-        }
-        if (update.size() != vehicles.size()) {
-            // find out the new/disappeared one
-        } else {
-            for (Vehicle u : update) {
-                for (Vehicle veh : vehicles) {
-                    if (u == veh) {
-                        exist = true;
-                    }
-                }
-                if (exist == false) {
-                    vehicles.add(u);
-                }
-            }
-        }
-    }
-
     public void sendMessage(Message message) {
         v.sendMessage(message);
     }
@@ -187,41 +166,78 @@ public class CPSCar {
      * Determines if a car that answered a broadcast is a) new, b) known, or c)
      * disappeared.
      */
-    private void updateCPSNetwork(String carID) {
-        // String or CPSCar object? Use of vehicle list?
-        if (cars.isEmpty()) {
-            cars.add(carID);
+    private void updateCPSNetwork(String[] parsed) {
+        String self = v.getAddress();
+        if (cars.contains(parsed[0])) {
+            int piece = Integer.parseInt(parsed[1]);
+            time.set(cars.indexOf(parsed[0]), date.getTime());
+            if (piece > (virtualId + 2) % (map.size()) || piece < (virtualId - 2) % (map.size())) {
+                time.remove(cars.indexOf(parsed[0]));
+                cars.remove(parsed[0]);
+            }
         } else {
-            boolean found = false;
-            for (String id : cars) {
-                if (id.equals(carID)) {
-                    found = true;
+            if (!self.equals(parsed[0]) && this.virtualId != -1) {
+                int piece = Integer.parseInt(parsed[1]);
+                if (piece <= (virtualId + 2) % (map.size()) && piece >= (virtualId - 2) % (map.size())) {
+                    cars.add(parsed[0]);
+                    time.add(date.getTime());
                 }
             }
-            if (!found) {
-                cars.add(carID);
+        }
+        for (long t : time) {
+            if (date.getTime() - t > 10000) {
+                cars.remove(time.indexOf(t));
+                time.remove(t);
             }
         }
     }
 
     // make the car aware of its own position
     private void updatePosition() throws IOException {
-        if (virtualId == -1 || (virtualId != map.indexOf(pieceId))) {
-            if (!map.duplicate(pieceId)) {
-                section = map.lookup(pieceId, false);
-                virtualId = map.getBySection(section);
-                if (reverse == false) {
-                    prevId = map.getBySection(section.getPrev());
-                } else {
-                    prevId = map.getBySection(section.getNext());
+        if (map != null) {
+            if (virtualId == -1 || (virtualId != map.indexOf(pieceId))) {
+                if (!map.duplicate(pieceId)) {
+                    section = map.lookup(pieceId, false);
+                    virtualId = map.getBySection(section);
+                    if (!this.reverse) {
+                        prevId = map.getBySection(section.getPrev());
+                    } else {
+                        prevId = map.getBySection(section.getNext());
+                    }
                 }
-
+            }
+        } else {
+            if (pieceId == 33 && !scanStarted) {
+                reverse = lpuh.reverse;
+                pieceIDs.clear();
+                pieceIDs.add(pieceId);
+                scan.startScanning();
+                System.out.println(v.getAdvertisement().getModel().name() + ": Started Scanning... ");
+                scanStarted = true;
+            } else {
+                if (pieceIDs != null && !pieceIDs.isEmpty()) {
+                    if (!scan.isComplete()) {
+                        if (pieceId != pieceIDs.get(pieceIDs.size() - 1)) {
+                            pieceIDs.add(pieceId);
+                        }
+                    } else {
+                        System.out.println(v.getAdvertisement().getModel().name() + ": Scan Completed... ");
+                        scan.stopScanning();
+                        System.out.println(v.getAdvertisement().getModel().name() + ": Stopped Scanning... ");
+                        Roadmap tempMap = scan.getRoadmap();
+                        System.out.println(pieceIDs);
+                        System.out.println(tempMap.toList());
+                        this.map = new Map(tempMap, this.reverse, pieceIDs);
+                        map.generateTrack();
+                        System.out.println(v.getAdvertisement().getModel().name() + ": Track Completed... ");
+                    }
+                }
             }
         }
         if (this.pieceId != lpuh.pieceId) {
             prevLocationId = locationId;
             if (virtualId != -1) {
-                if (reverse == false) {
+                if (!reverse) {
                     section = section.getNext();
                     virtualId = map.getBySection(section);
                     prevId = map.getBySection(section.getPrev());
@@ -234,16 +250,17 @@ public class CPSCar {
         }
         this.locationId = lpuh.locationId;
         this.pieceId = lpuh.pieceId;
-        this.reverse = lpuh.reverse;
         this.speed = lpuh.speed;
         this.offset = lpuh.offset;
         if (virtualId != -1) {
+            v.sendMessage(new SetSpeedMessage(300, 100));
             follow.updateInfo();
             emergStop.updateInfo();
-    //        over.updateInfo();
+            over.updateInfo();
+
             String position = v.getAddress() + " " + virtualId + " " + locationId + " " + prevId + " " + prevLocationId + " " + reverse + " " + speed + " " + offset;
             publisher.multicast(position);
-            // System.out.println(position);
+            System.out.println(position);
         }
     }
 
@@ -252,7 +269,7 @@ public class CPSCar {
      * LocalizationPositionUpdateMessage. We need handler classes because
      * responses from the vehicles are asynchronous.
      */
-    private static class LocalizationPositionUpdateHandler implements MessageListener<LocalizationPositionUpdateMessage> {
+    private class LocalizationPositionUpdateHandler implements MessageListener<LocalizationPositionUpdateMessage> {
 
         private int locationId;
         private int pieceId;
@@ -267,7 +284,7 @@ public class CPSCar {
             reverse = m.isParsedReverse();
             speed = m.getSpeed();
             offset = m.getOffsetFromRoadCenter();
-            //System.out.println("   Right now we are on: " + pieceId + ". Location: " + locationId + ". ");
+            System.out.println("   Right now we are on: " + pieceId + ". Location: " + locationId + ". ");
         }
     }
 
@@ -278,7 +295,7 @@ public class CPSCar {
                 try {
                     // sends a position update request to the vehicle
                     updatePosition();
-                    Thread.sleep(100);
+                    Thread.sleep(300);
                 } catch (IOException ex) {
                     Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
                 } catch (InterruptedException ex) {
@@ -288,13 +305,6 @@ public class CPSCar {
         }
     }
 
-    // tranfer the info b/t 2 CPSCars (broadcast) UDP connection
-    //private class server: continuously broadcast location and ID(who you are) -> JSON
-    //private class client: continuously receive/look for braodcast
-    //receive broadcast
-    //determine if it is here
-    //here: update
-    //not here: add car to the list
     private class MulticastReceiver extends Thread {
 
         protected MulticastSocket socket = null;
@@ -322,17 +332,17 @@ public class CPSCar {
                     String received = new String(
                             packet.getData(), 0, packet.getLength());
                     String[] parsed = parseBroadcast(received);
-                    if (parsed[0].equals(v.getAddress())) {
-                        continue;
+                    updateCPSNetwork(parsed);
+                    if (cars.contains(parsed[0])) {
+                        System.out.println(Arrays.toString(parsed) + " was received by " + id);
+                        follow.follow(received);
+//                    try {
+//                        over.overtake(received);
+//                    } catch (InterruptedException ex) {
+//                        Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+                        emergStop.emergStop(received);
                     }
-                    System.out.println(Arrays.toString(parsed) + " was received by " + id);
-                    follow.follow(received);
-         /*           try {
-                        over.overtake(received);
-                    } catch (InterruptedException ex) {
-                        Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-           */         emergStop.emergStop(received);
                     if ("end".equals(received)) {
                         break;
                     }
@@ -348,6 +358,7 @@ public class CPSCar {
     private String[] parseBroadcast(String received) {
         String[] parsed = received.split(" ");
         return parsed;
+
     }
 
     private class MulticastPublisher {

@@ -3,8 +3,8 @@
  */
 package edu.oswego.cs.CPSLab.AutomotiveCPS.behavior;
 
+import edu.oswego.cs.CPSLab.AutomotiveCPS.*;
 import de.adesso.anki.messages.ChangeLaneMessage;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 
 /**
  *

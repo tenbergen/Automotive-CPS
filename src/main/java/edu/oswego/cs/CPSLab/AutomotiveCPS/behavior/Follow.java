@@ -3,8 +3,11 @@
  */
 package edu.oswego.cs.CPSLab.AutomotiveCPS.behavior;
 
+import edu.oswego.cs.CPSLab.AutomotiveCPS.*;
 import de.adesso.anki.messages.SetSpeedMessage;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
+import de.adesso.anki.roadmap.Section;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *

@@ -3,9 +3,10 @@
  */
 package edu.oswego.cs.CPSLab.AutomotiveCPS.behavior;
 
-import de.adesso.anki.roadmap.Section;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.*;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Map;
+import de.adesso.anki.roadmap.Roadmap;
+import de.adesso.anki.roadmap.Section;
 
 /**
  *

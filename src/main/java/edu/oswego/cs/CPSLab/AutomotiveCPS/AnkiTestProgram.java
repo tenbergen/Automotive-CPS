@@ -20,7 +20,6 @@ import de.adesso.anki.roadmap.roadpieces.FinishRoadpiece;
 import de.adesso.anki.roadmap.roadpieces.Roadpiece;
 import de.adesso.anki.roadmap.roadpieces.StartRoadpiece;
 import de.adesso.anki.roadmap.roadpieces.StraightRoadpiece;
-
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -34,7 +33,6 @@ import java.util.List;
  * run this class.
  *
  * @author Bastian Tenbergen (bastian.tenbergen@oswego.edu)
- * @author Ka Ying Chan (kchan2@oswego.edu)
  */
 public class AnkiTestProgram {
 

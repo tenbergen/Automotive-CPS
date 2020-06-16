@@ -25,63 +25,53 @@ public class Overtake extends Behavior {
         boolean rev = Boolean.getBoolean(parsed[5]);
         int speed = Integer.parseInt(parsed[6]);
         float offset = Float.parseFloat(parsed[7]);
-        if (virtualId == piece && prevId == prevPiece) {
-            if (reverse == rev) {
-                if (reverse) {
-                    if (this.locationId - location <= 3 && this.locationId - location > 0 && this.speed > speed) {
-                        car.sendMessage(new SetSpeedMessage(speed - 5, 100));
-                    }
-                    if (this.offset > 23) {
-                        float desiredOffset = this.offset - 48;
-                        car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
-                        while (Math.abs(this.locationId - location) < 15) {
-                            car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
-                            Thread.sleep(50);
-                        }
-                        car.sendMessage(new SetSpeedMessage(this.speed + 100, 100));
-                        while ((piece - this.virtualId) < 1) {
-                        }
-                        car.sendMessage(new ChangeLaneMessage(desiredOffset + 48, 100, 100));
-                    } else {
-                        float desiredOffset = this.offset + 48;
-                        car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
-                        while (Math.abs(this.locationId - location) < 15) {     // conditions need to be refined
-                            car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
-                            Thread.sleep(50);
-                        }
-                        car.sendMessage(new SetSpeedMessage(this.speed + 100, 100));
-                        while ((piece - this.virtualId) < 1) {
-                        }
-                        car.sendMessage(new ChangeLaneMessage(desiredOffset - 48, 100, 100));
-                    }
-                } else {
-                    if (location - this.locationId <= 3 && location - this.locationId > 0 && this.speed > speed) {
-                        car.sendMessage(new SetSpeedMessage(speed - 5, 100));
-                    }
-                    if (this.offset > 23) {
-                        float desiredOffset = this.offset - 48;
-                        car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
-                        while (Math.abs(this.locationId - location) < 15) {
-                            car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
-                            Thread.sleep(50);
-                        }
-                        car.sendMessage(new SetSpeedMessage(this.speed + 100, 100));
-                        while ((this.virtualId - piece) < 1) {
-                        }
-                        car.sendMessage(new ChangeLaneMessage(desiredOffset + 48, 100, 100));
-                    } else {
-                        float desiredOffset = this.offset + 48;
-                        car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
-                        while (Math.abs(this.locationId - location) < 15) {
-                            car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
-                            Thread.sleep(50);
-                        }
-                        car.sendMessage(new SetSpeedMessage(this.speed + 100, 100));
-                        while ((this.virtualId - piece) < 1) {
-                        }
-                        car.sendMessage(new ChangeLaneMessage(desiredOffset - 48, 100, 100));
-                    }
+        if (reverse) {
+            if (this.offset > 23) {
+                float desiredOffset = this.offset - 48;
+                car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
+                while (Math.abs(this.locationId - location) < 15) {
+                    car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
+                    Thread.sleep(50);
                 }
+                car.sendMessage(new SetSpeedMessage(this.speed + 100, 100));
+                while ((piece - this.virtualId) < 1) {
+                }
+                car.sendMessage(new ChangeLaneMessage(desiredOffset + 48, 100, 100));
+            } else {
+                float desiredOffset = this.offset + 48;
+                car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
+                while (Math.abs(this.locationId - location) < 15) {     // conditions need to be refined
+                    car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
+                    Thread.sleep(50);
+                }
+                car.sendMessage(new SetSpeedMessage(this.speed + 100, 100));
+                while ((piece - this.virtualId) < 1) {
+                }
+                car.sendMessage(new ChangeLaneMessage(desiredOffset - 48, 100, 100));
+            }
+        } else {
+            if (this.offset > 23) {
+                float desiredOffset = this.offset - 48;
+                car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
+                while (Math.abs(this.locationId - location) < 15) {
+                    car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
+                    Thread.sleep(50);
+                }
+                car.sendMessage(new SetSpeedMessage(this.speed + 100, 100));
+                while ((this.virtualId - piece) < 1) {
+                }
+                car.sendMessage(new ChangeLaneMessage(desiredOffset + 48, 100, 100));
+            } else {
+                float desiredOffset = this.offset + 48;
+                car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
+                while (Math.abs(this.locationId - location) < 15) {
+                    car.sendMessage(new ChangeLaneMessage(desiredOffset, 100, 100));
+                    Thread.sleep(50);
+                }
+                car.sendMessage(new SetSpeedMessage(this.speed + 100, 100));
+                while ((this.virtualId - piece) < 1) {
+                }
+                car.sendMessage(new ChangeLaneMessage(desiredOffset - 48, 100, 100));
             }
         }
     }

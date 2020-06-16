@@ -41,7 +41,7 @@ public class CPSCar {
 
     private Vehicle v;
     private Map map;
-    private List<String> cars;
+    private List<String[]> cars;
     private List<Long> time;
     private Date date;
     private MulticastReceiver receiver;
@@ -57,6 +57,7 @@ public class CPSCar {
     private int prevLocationId;
     private int prevId;
     private Section section;
+    private boolean ableToOvertake;
 
     private RoadmapScanner scan;
     private boolean scanStarted;
@@ -86,9 +87,9 @@ public class CPSCar {
         lpuh = new LocalizationPositionUpdateHandler();
         v.addMessageListener(LocalizationPositionUpdateMessage.class, lpuh);
         v.sendMessage(new LocalizationPositionUpdateMessage());
-        v.sendMessage(new SetOffsetFromRoadCenterMessage(offset));
+        v.sendMessage(new SetOffsetFromRoadCenterMessage());
 
-        cars = new ArrayList<String>();
+        cars = new ArrayList<String[]>();
         time = new ArrayList<Long>();
         date = new Date();
         t = new Thread(new PositionUpdater());
@@ -99,6 +100,7 @@ public class CPSCar {
         follow = new Follow(this);
         emergStop = new EmergencyStop(this);
         over = new Overtake(this);
+        ableToOvertake = false;
 
         scan = new RoadmapScanner(v);
         scanStarted = false;
@@ -154,11 +156,15 @@ public class CPSCar {
         return section;
     }
 
+    public void ableToOvertake(boolean able) {
+        ableToOvertake = able;
+    }
+
     public void sendMessage(Message message) {
         v.sendMessage(message);
     }
 
-    public List<String> getCarList() {
+    public List<String[]> getCarList() {
         return cars;
     }
 
@@ -168,18 +174,18 @@ public class CPSCar {
      */
     private void updateCPSNetwork(String[] parsed) {
         String self = v.getAddress();
-        if (cars.contains(parsed[0])) {
+        if (cars.contains(parsed)) {
             int piece = Integer.parseInt(parsed[1]);
-            time.set(cars.indexOf(parsed[0]), date.getTime());
+            time.set(cars.indexOf(parsed), date.getTime());
             if (piece > (virtualId + 2) % (map.size()) || piece < (virtualId - 2) % (map.size())) {
-                time.remove(cars.indexOf(parsed[0]));
-                cars.remove(parsed[0]);
+                time.remove(cars.indexOf(parsed));
+                cars.remove(parsed);
             }
         } else {
             if (!self.equals(parsed[0]) && this.virtualId != -1) {
                 int piece = Integer.parseInt(parsed[1]);
                 if (piece <= (virtualId + 2) % (map.size()) && piece >= (virtualId - 2) % (map.size())) {
-                    cars.add(parsed[0]);
+                    cars.add(parsed);
                     time.add(date.getTime());
                 }
             }
@@ -209,11 +215,11 @@ public class CPSCar {
         } else {
             if (pieceId == 33 && !scanStarted) {
                 reverse = lpuh.reverse;
-                pieceIDs.clear();
-                pieceIDs.add(pieceId);
                 scan.startScanning();
                 System.out.println(v.getAdvertisement().getModel().name() + ": Started Scanning... ");
+                pieceIDs.add(pieceId);
                 scanStarted = true;
+                v.sendMessage(new SetSpeedMessage(300, 100));
             } else {
                 if (pieceIDs != null && !pieceIDs.isEmpty()) {
                     if (!scan.isComplete()) {
@@ -230,6 +236,13 @@ public class CPSCar {
                         this.map = new Map(tempMap, this.reverse, pieceIDs);
                         map.generateTrack();
                         System.out.println(v.getAdvertisement().getModel().name() + ": Track Completed... ");
+                        System.out.println(v.getAdvertisement().getModel().name() + ": Sleep for 3 seconds... ");
+                        try {
+                            Thread.sleep(3000);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        v.sendMessage(new SetSpeedMessage(300, 100));
                     }
                 }
             }
@@ -253,14 +266,12 @@ public class CPSCar {
         this.speed = lpuh.speed;
         this.offset = lpuh.offset;
         if (virtualId != -1) {
-            v.sendMessage(new SetSpeedMessage(300, 100));
             follow.updateInfo();
             emergStop.updateInfo();
             over.updateInfo();
 
             String position = v.getAddress() + " " + virtualId + " " + locationId + " " + prevId + " " + prevLocationId + " " + reverse + " " + speed + " " + offset;
             publisher.multicast(position);
-            System.out.println(position);
         }
     }
 
@@ -284,7 +295,7 @@ public class CPSCar {
             reverse = m.isParsedReverse();
             speed = m.getSpeed();
             offset = m.getOffsetFromRoadCenter();
-            System.out.println("   Right now we are on: " + pieceId + ". Location: " + locationId + ". ");
+            //System.out.println("   Right now we are on: " + pieceId + ". Location: " + locationId + ". ");
         }
     }
 
@@ -333,14 +344,16 @@ public class CPSCar {
                             packet.getData(), 0, packet.getLength());
                     String[] parsed = parseBroadcast(received);
                     updateCPSNetwork(parsed);
-                    if (cars.contains(parsed[0])) {
+                    if (cars.contains(parsed)) {
                         System.out.println(Arrays.toString(parsed) + " was received by " + id);
                         follow.follow(received);
-//                    try {
-//                        over.overtake(received);
-//                    } catch (InterruptedException ex) {
-//                        Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
+                        if (ableToOvertake) {
+                            try {
+                                over.overtake(received);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
                         emergStop.emergStop(received);
                     }
                     if ("end".equals(received)) {

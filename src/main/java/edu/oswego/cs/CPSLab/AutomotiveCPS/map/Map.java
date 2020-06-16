@@ -27,6 +27,7 @@ public class Map {
     private List<Block> track;
 
     public Map(Roadmap map, boolean rev, ArrayList<Integer> pieceIDs) {
+        map.normalize();
         this.map = map;
         this.rev = rev;
         this.pieceIDs = pieceIDs;

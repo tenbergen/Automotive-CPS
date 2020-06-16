@@ -1,5 +1,5 @@
 /*
- * Class for Behavior EmergencyStop
+ * Class for Behavior Emergency Stop
  */
 package edu.oswego.cs.CPSLab.AutomotiveCPS.behavior;
 

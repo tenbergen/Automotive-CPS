@@ -7,13 +7,10 @@ package GUI;
 
 import Controller.ConnectorDAO;
 import Controller.VehicleDAO;
-import de.adesso.anki.Vehicle;
-import java.net.URL;
-import java.util.List;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.PullOver;
 import javafx.application.Application;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.collections.FXCollections;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -352,12 +349,24 @@ public class ControlGUI extends Application {
             txt_control_parameter_battery.setText("Not Charging");
         
         //txt_control_road_type.setText(""+vehicle.getCpsCar().getMap());
+        
     }
     
     public void adjustSpeed(boolean increase){
         if (increase){
             System.out.println("Increase Speed >>> ");
             //Increase Speed
+            
+            VehicleDAO vehicle = connectorDAO.getSelectedVehicle();
+            
+            vehicle.pullOver();
+            
+            
+            PullOver pullOver = new PullOver(vehicle.getCpsCar());
+            pullOver.run();
+            
+            System.out.println("Done");
+            
         }
         else{
             System.out.println("Decrease Speed <<< ");

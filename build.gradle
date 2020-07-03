@@ -40,3 +40,12 @@ task ankiConnectionTest(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
     main = 'edu.oswego.cs.CPSLab.AnkiConnectionTest'
 }
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/java"]
+            includes = ["**/*.css"]
+        }
+    }
+}

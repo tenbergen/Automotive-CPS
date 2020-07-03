@@ -98,7 +98,7 @@ public class ControlGUI extends Application {
         vbox_vehicle.getChildren().add(txt_vehicle_desc);
                 
         //List View
-        //connectorDAO.updateVehicles();
+        connectorDAO.updateVehicles();
         
         lv_vehicles.setId("vehicle-listview");      
         lv_vehicles.setPrefHeight(Parameter.HEIGHT_LIST_CAR);
@@ -113,7 +113,7 @@ public class ControlGUI extends Application {
             public void changed(ObservableValue<? extends VehicleDAO> observable, VehicleDAO oldValue, VehicleDAO newValue) {
                 // Action here
                 System.out.println("Selected vehicle: " + newValue.getCpsCar().getVehicle().getAdvertisement().getIdentifier());
-                //updateSelectedVehicle(newValue);
+                updateSelectedVehicle(newValue);
             }
         });       
         hbox_selection.getChildren().add(lv_vehicles);
@@ -347,9 +347,9 @@ public class ControlGUI extends Application {
         txt_control_parameter_speed.setText(""+vehicle.getCpsCar().getSpeed());
         
         if(vehicle.getCpsCar().getVehicle().getAdvertisement().isCharging())
-            txt_control_parameter_battery.setText("Not Charging");
-        else
             txt_control_parameter_battery.setText("Charging");
+        else
+            txt_control_parameter_battery.setText("Not Charging");
         
         //txt_control_road_type.setText(""+vehicle.getCpsCar().getMap());
     }

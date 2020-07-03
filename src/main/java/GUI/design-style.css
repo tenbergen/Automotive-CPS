@@ -14,3 +14,121 @@ and open the template in the editor.
     -fx-text-fill: #ffffff;
     -fx-effect: dropshadow( gaussian , rgba(255,255,255,0.5) , 0,0,0,1 );
 }
+
+.button {
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+    -fx-background-color: #ffffff;
+    -fx-effect: dropshadow( three-pass-box , rgb(204, 221, 255) , 10,0,0,1);
+}
+
+#adjust-button{
+    -fx-background-color: transparent;
+    -fx-effect: dropshadow( three-pass-box , rgb(204, 221, 255) , 10,0,0,1);
+}
+
+#adjust-button:hover {
+    -fx-background-color: grey;
+}
+
+
+#vehicle-listview{
+    -fx-background-color :transparent;
+    -fx-border-color :#ff9600;
+}
+#vehicle-listview .scroll-bar {  
+    -fx-scale-x: 0.5;
+    -fx-background-color :transparent;
+    -fx-border-color :transparent;
+    -fx-background-radius: 0em;
+    -fx-border-radius:2em;
+}
+
+#vehicle-listview .scroll-bar .increment-arrow, 
+#vehicle-listview .scroll-bar .decrement-arrow{
+    -fx-shape: " ";	
+    -fx-padding:0;
+}
+#vehicle-listview .list-cell:filled:hover{
+    -fx-opacity: 0.6;
+    -fx-background-color: #ff9600;
+}
+
+#vehicle-listview .list-cell:filled:selected:focused, .list-cell:filled:selected {
+    -fx-opacity: 1;
+    -fx-background-color: #ff9600;
+}
+#vehicle-listview .list-cell{
+    -fx-opacity: 0.6;
+    -fx-background-color: transparent;
+}
+
+#connection-grid{
+    -fx-background-image: url("img/background-img.jpg");
+     -fx-background-size: 600px 400px;
+}
+
+#control-grid{
+    -fx-background-color: black;
+    -fx-background-size: 600px 400px;
+}
+
+#title-text {
+   -fx-font-size: 20px;
+   -fx-font-family: "Arial Black";
+   -fx-fill: white;
+   -fx-effect: innershadow( three-pass-box , rgba(0,0,0,0.7) , 6, 0.0 , 0 , 2 );
+}
+
+#heading1-text {
+   -fx-font-size: 20px;
+   -fx-effect: innershadow( three-pass-box , #ff9600 , 6, 0.0 , 0 , 2 );
+   -fx-fill: white;
+}
+
+#label-text{
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-effect: innershadow( three-pass-box , #ff9600 , 6, 0.0 , 0 , 2 );
+    -fx-fill: black; 
+}
+
+#road-type-text{
+    -fx-font-family: "Arial Black";
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-effect: innershadow( three-pass-box , red , 6, 0.0 , 0 , 2 );
+    -fx-fill: #ff9600; 
+}
+
+#normal-text{
+   -fx-fill: white;
+}
+
+#announcement-text{
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-fill: #ff0000;
+}
+
+#behavior-listview{
+    -fx-border-color :#ff9600;
+}
+#behavior-listview .list-cell:filled:hover{
+    -fx-background-color: red;
+}
+#behavior-listview .list-cell{
+    -fx-background-color: black;
+    -fx-text-fill: white;
+}
+
+#behavior-treeview{
+    -fx-border-color :#ff9600;
+}
+#behavior-treeview .tree-cell:filled:hover{
+    -fx-background-color: #ff9600;
+}
+#behavior-treeview .tree-cell{
+    -fx-background-color: black;
+    -fx-text-fill: white;
+}

@@ -24,7 +24,7 @@ public class GUITestProgram {
      */
     public static void main(String[] args) throws IOException, InterruptedException {
         
-        String ip = "localhost";
+        String ip = "192.168.1.101";
         int port = 5000;
                
         ConnectorDAO connector = new ConnectorDAO(ip,port); 

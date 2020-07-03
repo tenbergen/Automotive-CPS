@@ -84,7 +84,7 @@ public class ConnectGUI extends Application {
             @Override
             public void handle(ActionEvent e) {
                 String ip = txt_ip_address.getText();
-                int port=3001;
+                int port=5000;
                 
                 //Handle port input
                 try{
@@ -116,6 +116,7 @@ public class ConnectGUI extends Application {
                         }
                     }).start();
                     
+                    System.out.println(ip+"-"+port);
                     ConnectorDAO connector = new ConnectorDAO(ip,port); 
                     
                     //Call control stage

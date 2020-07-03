@@ -116,6 +116,9 @@ public class CPSCar {
 //        }
     }
 
+    public Vehicle getVehicle(){
+        return v;
+    }
     public Map getMap() {
         return map;
     }
@@ -335,7 +338,7 @@ public class CPSCar {
         public void run() {
             try {
                 socket = new MulticastSocket(4446);
-                InetAddress group = InetAddress.getByName("230.0.0.0");
+                InetAddress group = InetAddress.getByName("230.0.0.4");
                 socket.joinGroup(group);
                 while (!stopped) {
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);

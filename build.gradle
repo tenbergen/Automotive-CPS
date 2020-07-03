@@ -25,8 +25,8 @@ dependencies {
     //testCompile group: 'junit', name: 'junit', version: '4.12'
     //compile 'com.github.tenbergen:anki-drive-java:-SNAPSHOT'
     //implementation 'com.github.tenbergen:anki-drive-java:-SNAPSHOT'
-    compile 'com.github.tenbergen:anki-drive-java:0.1.6'
-    implementation 'com.github.tenbergen:anki-drive-java:0.1.6'
+    compile 'com.github.tenbergen:anki-drive-java:latest.integration'
+    implementation 'com.github.tenbergen:anki-drive-java:latest.integration'
 }
 
 idea {

@@ -116,6 +116,9 @@ public class CPSCar {
 //        }
     }
 
+    public Vehicle getVehicle(){
+        return v;
+    }
     public Map getMap() {
         return map;
     }

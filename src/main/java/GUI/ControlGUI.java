@@ -7,11 +7,14 @@ package GUI;
 
 import Controller.ConnectorDAO;
 import Controller.VehicleDAO;
+import java.util.List;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -46,6 +49,7 @@ public class ControlGUI extends Application {
     private ConnectorDAO connectorDAO;
   
     private ListView<VehicleDAO> lv_vehicles = new ListView<>();
+    private ObservableList<VehicleDAO> observable_list_vehicles;
     
     //Component of information section
     Text txt_vehicle_name;
@@ -113,12 +117,15 @@ public class ControlGUI extends Application {
                 
         //List View
         connectorDAO.updateVehicles();
+        observable_list_vehicles = FXCollections.observableList(connectorDAO.getVehicles());
+        //UpdateConnectedVehicles updateVehiclesThread = new UpdateConnectedVehicles();
+        //updateVehiclesThread.start();
         
         lv_vehicles.setId("vehicle-listview");      
         lv_vehicles.setPrefHeight(Parameter.HEIGHT_LIST_CAR);
         lv_vehicles.setPrefWidth(Parameter.WIDTH_LIST_CAR);
         lv_vehicles.setCellFactory((ListView<VehicleDAO> l) -> new ColorRectCell());
-        lv_vehicles.setItems(connectorDAO.getVehicles());
+        lv_vehicles.setItems(this.observable_list_vehicles);
         
         //Handle select item
         lv_vehicles.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<VehicleDAO>() {
@@ -444,7 +451,7 @@ public class ControlGUI extends Application {
         //List view of current behaviors
         lv_current_behaviors = new ListView<>();
         lv_current_behaviors.setId("behavior-listview");
-        lv_current_behaviors.getItems().add("Running");
+        lv_current_behaviors.getItems().add(Parameter.BEHAVIOR_CONNECTED);
         
         lv_current_behaviors.setCellFactory(lv -> {
             ListCell<String> listCell = new ListCell<String>(){
@@ -554,7 +561,15 @@ public class ControlGUI extends Application {
         else
             txt_control_parameter_battery.setText("Not Charging");
         
-        //txt_control_road_type.setText(""+vehicle.getCpsCar().getMap());
+        ///Update list of behaviors
+        List<String> behaviors = vehicle.getCurrentBehaviors();
+        lv_current_behaviors.getItems().clear();
+        lv_current_behaviors.getItems().add(Parameter.BEHAVIOR_CONNECTED);
+        for (String behavior: behaviors){
+            lv_current_behaviors.getItems().add(behavior);
+        }
+        
+        
         
     }
     
@@ -587,8 +602,13 @@ public class ControlGUI extends Application {
             showPopup(Parameter.MESSAGE_NO_SELECTED_VEHICLE);
             return;
         }
+        if (listCell.getItem().equals(Parameter.BEHAVIOR_CONNECTED)){
+            showPopup(Parameter.MESSAGE_NO_ADJUST_CONNECTED_BEHAVIOR);
+            return;
+        }
         if (lv_current_behaviors.getItems().size()>1){
             System.out.println("Remove -- "+listCell.getItem());
+            connectorDAO.getSelectedVehicle().removeCurrentBehaviors(""+listCell.getItem());
             connectorDAO.stopBehavior(""+listCell.getItem());
             lv_current_behaviors.getItems().remove(listCell.getItem());
         }
@@ -603,6 +623,7 @@ public class ControlGUI extends Application {
         if(!lv_current_behaviors.getItems().contains(dragSourceCell.getItem())){
             lv_current_behaviors.getItems().add(dragSourceCell.getItem());
             System.out.println("Add ++ "+dragSourceCell.getItem());
+            connectorDAO.getSelectedVehicle().addCurrentBehaviors(""+dragSourceCell.getItem());
             connectorDAO.performBehavior(""+dragSourceCell.getItem());            
         }
     }
@@ -618,4 +639,5 @@ public class ControlGUI extends Application {
         dialog.setScene(dialogScene);
         dialog.show();
     }
+    
 }

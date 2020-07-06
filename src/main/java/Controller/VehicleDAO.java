@@ -7,6 +7,10 @@ package Controller;
 
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.BrakeLight;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.EmergencyLight;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.FourWayHazardLight;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  *
@@ -26,9 +30,29 @@ public class VehicleDAO {
     private String description;
     private int battery;
     
+    private List<String> currentBehaviors = new ArrayList<>();
     private BrakeLight brakeLight;
-    
+    private EmergencyLight emergencyLight;
+    private FourWayHazardLight fourWayHazardLight;
 
+    
+    public List<String> getCurrentBehaviors() {
+        return currentBehaviors;
+    }
+
+    public void setCurrentBehaviors(List<String> currentBehaviors) {
+        this.currentBehaviors = currentBehaviors;
+    }
+
+    public void addCurrentBehaviors(String behavior){
+        if(!currentBehaviors.contains(behavior))
+            currentBehaviors.add(behavior);
+    }
+    
+    public void removeCurrentBehaviors(String behavior){
+        if(currentBehaviors.contains(behavior))
+            currentBehaviors.remove(behavior);
+    }
     
     public CPSCar getCpsCar() {
         return cpsCar;
@@ -92,5 +116,37 @@ public class VehicleDAO {
         }
         this.brakeLight.turnOff();
         System.out.println("Turn off brake light Vehicle DAO");
+    }
+    
+    public void turnOnEmergencyLight(){
+        if (this.emergencyLight == null){
+            this.emergencyLight = new EmergencyLight(this.cpsCar);
+        }
+        this.emergencyLight.turnOn();
+        System.out.println("Turn on emergency light Vehicle DAO");
+    }
+    
+    public void turnOffEmergencyLight(){
+        if (this.emergencyLight == null){
+            this.emergencyLight = new EmergencyLight(this.cpsCar);
+        }
+        this.emergencyLight.turnOff();
+        System.out.println("Turn off emergency light Vehicle DAO");
+    }
+    
+    public void turnOnFourWayHazardLight(){
+        if (this.fourWayHazardLight == null){
+            this.fourWayHazardLight = new FourWayHazardLight(this.cpsCar);
+        }
+        this.fourWayHazardLight.turnOn();
+        System.out.println("Turn on four way hazard light Vehicle DAO");
+    }
+    
+    public void turnOffFourWayHazardLight(){
+        if (this.fourWayHazardLight == null){
+            this.fourWayHazardLight = new FourWayHazardLight(this.cpsCar);
+        }
+        this.fourWayHazardLight.turnOff();
+        System.out.println("Turn off four way hazard light Vehicle DAO");
     }
 }

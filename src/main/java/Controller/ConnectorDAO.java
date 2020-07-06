@@ -11,6 +11,7 @@ import de.adesso.anki.Vehicle;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import javafx.collections.FXCollections;
@@ -22,22 +23,25 @@ import javafx.collections.ObservableList;
  */
 public class ConnectorDAO {
     private final AnkiConnector ankiConnector;
-    private ObservableList<VehicleDAO> vehicles; 
+    private List<VehicleDAO> vehicles;
     private VehicleDAO selectedVehicle;
+    private HashMap<String, VehicleDAO> existedVehicles;
     
     public ConnectorDAO(String ip, int port) throws IOException{
-        ankiConnector = new AnkiConnector(ip,port);
+        this.ankiConnector = new AnkiConnector(ip,port);
+        this.existedVehicles = new HashMap<>();
+        this.vehicles = new ArrayList<>();
     }
     
     public AnkiConnector getAnkiConnector(){
         return ankiConnector;
     }
 
-    public ObservableList<VehicleDAO> getVehicles() {
-        return vehicles;
+    public List<VehicleDAO> getVehicles() {
+        return this.vehicles;
     }
 
-    public void setVehicles(ObservableList<VehicleDAO> vehicles) {
+    public void setVehicles(List<VehicleDAO> vehicles) {
         this.vehicles = vehicles;
     }
 
@@ -49,32 +53,50 @@ public class ConnectorDAO {
         this.selectedVehicle = selectedVehicle;
     }
     
-    //public void 
+    public void addVehicle(Vehicle v){
+        try{
+            System.out.println("   " + v);
+            System.out.println("      ID: " + v.getAdvertisement().getIdentifier());
+            System.out.println("      Model: " + v.getAdvertisement().getModel());
+            System.out.println("      Model ID: " + v.getAdvertisement().getModelId());
+            System.out.println("      Product ID: " + v.getAdvertisement().getProductId());
+            System.out.println("      Address: " + v.getAddress());
+            System.out.println("      Color: " + v.getColor());
+            System.out.println("      charging? " + v.getAdvertisement().isCharging());
+                
+            VehicleDAO vehicle = new VehicleDAO();
+            vehicle.setCpsCar(new CPSCar(v));
+            vehicle.setImg("GUI/img/Vehicle/"+v.getAdvertisement().getModel()+".png");
+            this.vehicles.add(vehicle);
+            this.existedVehicles.put(""+v.getAdvertisement().getIdentifier(),vehicle);
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }      
+    }
+    public void removeVehicle(String key){
+        try{
+            if(this.existedVehicles.containsKey(key)){
+                VehicleDAO vehicle = this.existedVehicles.get(key);
+                vehicles.remove(vehicle);
+                this.existedVehicles.remove(key);               
+            }
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
+    }
     
     public void updateVehicles(){     
         try{
-            List<VehicleDAO> vehicles = new ArrayList<>();
-            Iterator<Vehicle> iter = ankiConnector.findVehicles().iterator();
-            
-            while (iter.hasNext()) {
-                Vehicle v = iter.next();
-                
-                System.out.println("   " + v);
-                System.out.println("      ID: " + v.getAdvertisement().getIdentifier());
-                System.out.println("      Model: " + v.getAdvertisement().getModel());
-                System.out.println("      Model ID: " + v.getAdvertisement().getModelId());
-                System.out.println("      Product ID: " + v.getAdvertisement().getProductId());
-                System.out.println("      Address: " + v.getAddress());
-                System.out.println("      Color: " + v.getColor());
-                System.out.println("      charging? " + v.getAdvertisement().isCharging());
-                
-                VehicleDAO vehicle = new VehicleDAO();
-                vehicle.setCpsCar(new CPSCar(v));
-                vehicle.setImg("GUI/img/Vehicle/"+v.getAdvertisement().getModel()+".png");
-                vehicles.add(vehicle);
+            List<Vehicle> lst = ankiConnector.findVehicles();           
+            for (Vehicle v : lst) {
+                String key = ""+v.getAdvertisement().getIdentifier();
+                System.out.print("Get car: "+v.getAdvertisement().getModel());
+                if(!this.existedVehicles.containsKey(key)){
+                    addVehicle(v);
+                }                  
             }
-            
-            this.vehicles = FXCollections.observableArrayList(vehicles);
         }     
         catch(Exception e){
             e.printStackTrace();
@@ -105,9 +127,14 @@ public class ConnectorDAO {
         switch(behavior){
             case Parameter.BEHAVIOR_BRAKE_LIGHT:
                 turnOnBrakeLight();
-            case Parameter.BEHAVIOR_EMERGENCY_LIGHT:
                 break;
+                
+            case Parameter.BEHAVIOR_EMERGENCY_LIGHT:
+                turnOnEmergencyLight();
+                break;
+                
             case Parameter.BEHAVIOR_FOUR_WAY_HAZARD_LIGHT:
+                turnOnFourWayHazardLight();
                 break;
         }
     }
@@ -117,9 +144,13 @@ public class ConnectorDAO {
             case Parameter.BEHAVIOR_BRAKE_LIGHT:
                 turnOffBrakeLight();
                 break;
+                
             case Parameter.BEHAVIOR_EMERGENCY_LIGHT:
+                turnOffEmergencyLight();
                 break;
+                
             case Parameter.BEHAVIOR_FOUR_WAY_HAZARD_LIGHT:
+                turnOffFourWayHazardLight();
                 break;
         }
     }
@@ -135,4 +166,29 @@ public class ConnectorDAO {
             return;
         selectedVehicle.turnOffBrakeLight();
     }
+    
+    public void turnOnEmergencyLight(){
+        if (selectedVehicle==null)
+            return;
+        selectedVehicle.turnOnEmergencyLight();
+    }
+    
+    public void turnOffEmergencyLight(){
+        if (selectedVehicle==null)
+            return;
+        selectedVehicle.turnOffEmergencyLight();
+    }
+    
+    public void turnOnFourWayHazardLight(){
+        if (selectedVehicle==null)
+            return;
+        selectedVehicle.turnOnFourWayHazardLight();
+    }
+    
+    public void turnOffFourWayHazardLight(){
+        if (selectedVehicle==null)
+            return;
+        selectedVehicle.turnOffFourWayHazardLight();       
+    }
+    
 }

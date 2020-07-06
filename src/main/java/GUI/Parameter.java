@@ -71,6 +71,8 @@ public class Parameter {
     /**
      * Behaviors
      */   
+    public static final String BEHAVIOR_CONNECTED = "Connected";
+    
     public static final String BEHAVIOR_BRAKE_LIGHT = "Brake Light";
     public static final String BEHAVIOR_EMERGENCY_LIGHT = "Emergency Light";
     public static final String BEHAVIOR_FOUR_WAY_HAZARD_LIGHT = "Four Way Hazard Light";
@@ -84,4 +86,5 @@ public class Parameter {
     */
     public static final String MESSAGE_SUCCESS = "200 Success";
     public static final String MESSAGE_NO_SELECTED_VEHICLE = "No selected vehicle";
+    public static final String MESSAGE_NO_ADJUST_CONNECTED_BEHAVIOR = "This behavior cannot be manually adjusted";
 }

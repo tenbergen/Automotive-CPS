@@ -6,6 +6,7 @@
 package Controller;
 
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.BrakeLight;
 
 /**
  *
@@ -24,6 +25,9 @@ public class VehicleDAO {
     private String type;
     private String description;
     private int battery;
+    
+    private BrakeLight brakeLight;
+    
 
     
     public CPSCar getCpsCar() {
@@ -74,8 +78,19 @@ public class VehicleDAO {
         this.battery = battery;
     }
     
+    public void turnOnBrakeLight(){
+        if (this.brakeLight == null){
+            this.brakeLight = new BrakeLight(this.cpsCar);
+        }
+        this.brakeLight.turnOn();
+        System.out.println("Turn on brake light Vehicle DAO");
+    }
     
-    
-    
-    
+    public void turnOffBrakeLight(){
+        if (this.brakeLight == null){
+            this.brakeLight = new BrakeLight(this.cpsCar);
+        }
+        this.brakeLight.turnOff();
+        System.out.println("Turn off brake light Vehicle DAO");
+    }
 }

@@ -5,6 +5,7 @@
  */
 package Controller;
 
+import GUI.Parameter;
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.Vehicle;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
@@ -48,6 +49,8 @@ public class ConnectorDAO {
         this.selectedVehicle = selectedVehicle;
     }
     
+    //public void 
+    
     public void updateVehicles(){     
         try{
             List<VehicleDAO> vehicles = new ArrayList<>();
@@ -77,5 +80,59 @@ public class ConnectorDAO {
             e.printStackTrace();
         }
         
+    }
+    
+    public List<String> getLightBehavior(){
+        List<String> lights = new ArrayList();
+        lights.add(Parameter.BEHAVIOR_BRAKE_LIGHT);
+        lights.add(Parameter.BEHAVIOR_EMERGENCY_LIGHT);
+        lights.add(Parameter.BEHAVIOR_FOUR_WAY_HAZARD_LIGHT);   
+        return lights;
+    }
+    
+    public List<String> getMovementBehavior(){
+        List<String> lights = new ArrayList();
+        lights.add(Parameter.BEHAVIOR_CHANGE_LANE);
+        lights.add(Parameter.BEHAVIOR_EMERGENCY_STOP);
+        lights.add(Parameter.BEHAVIOR_PULL_OVER);   
+        return lights;
+    }
+
+    /**
+     * Perform BEHAVIORS
+     */  
+    public void performBehavior(String behavior) {
+        switch(behavior){
+            case Parameter.BEHAVIOR_BRAKE_LIGHT:
+                turnOnBrakeLight();
+            case Parameter.BEHAVIOR_EMERGENCY_LIGHT:
+                break;
+            case Parameter.BEHAVIOR_FOUR_WAY_HAZARD_LIGHT:
+                break;
+        }
+    }
+    
+    public void stopBehavior(String behavior){
+        switch(behavior){
+            case Parameter.BEHAVIOR_BRAKE_LIGHT:
+                turnOffBrakeLight();
+                break;
+            case Parameter.BEHAVIOR_EMERGENCY_LIGHT:
+                break;
+            case Parameter.BEHAVIOR_FOUR_WAY_HAZARD_LIGHT:
+                break;
+        }
+    }
+    
+    public void turnOnBrakeLight(){
+        if (selectedVehicle==null)
+            return;
+        selectedVehicle.turnOnBrakeLight();
+    }
+    
+    public void turnOffBrakeLight(){
+        if (selectedVehicle==null)
+            return;
+        selectedVehicle.turnOffBrakeLight();
     }
 }

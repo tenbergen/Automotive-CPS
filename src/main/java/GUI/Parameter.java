@@ -65,4 +65,26 @@ public class Parameter {
     
     public static final int HEIGHT_THUMBNAIL = 100;
     public static final int WIDTH_DESCRIPTION_CAR = 250;
+    
+    
+    
+    /**
+     * Behaviors
+     */   
+    public static final String BEHAVIOR_CONNECTED = "Connected";
+    
+    public static final String BEHAVIOR_BRAKE_LIGHT = "Brake Light";
+    public static final String BEHAVIOR_EMERGENCY_LIGHT = "Emergency Light";
+    public static final String BEHAVIOR_FOUR_WAY_HAZARD_LIGHT = "Four Way Hazard Light";
+    
+    public static final String BEHAVIOR_CHANGE_LANE = "Change Lane";
+    public static final String BEHAVIOR_EMERGENCY_STOP = "Emergency Stop";
+    public static final String BEHAVIOR_PULL_OVER = "Pull Over";
+    
+    /**
+    * Message
+    */
+    public static final String MESSAGE_SUCCESS = "200 Success";
+    public static final String MESSAGE_NO_SELECTED_VEHICLE = "No selected vehicle";
+    public static final String MESSAGE_NO_ADJUST_CONNECTED_BEHAVIOR = "This behavior cannot be manually adjusted";
 }

@@ -57,7 +57,7 @@ public class ConnectGUI extends Application {
         Label lb_ip_address = new Label("IP Address:");
         grid.add(lb_ip_address, 0, 1);
 
-        TextField txt_ip_address = new TextField("127.0.0.1");
+        TextField txt_ip_address = new TextField("192.168.1.101");
         grid.add(txt_ip_address, 1, 1);
 
         //Port label and text field

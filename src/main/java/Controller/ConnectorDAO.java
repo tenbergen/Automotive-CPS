@@ -113,11 +113,12 @@ public class ConnectorDAO {
     }
     
     public List<String> getMovementBehavior(){
-        List<String> lights = new ArrayList();
-        lights.add(Parameter.BEHAVIOR_CHANGE_LANE);
-        lights.add(Parameter.BEHAVIOR_EMERGENCY_STOP);
-        lights.add(Parameter.BEHAVIOR_PULL_OVER);   
-        return lights;
+        List<String> movement = new ArrayList();
+        movement.add(Parameter.BEHAVIOR_CHANGE_LANE);
+        movement.add(Parameter.BEHAVIOR_EMERGENCY_STOP);
+        movement.add(Parameter.BEHAVIOR_PULL_OVER);  
+        movement.add(Parameter.BEHAVIOR_U_TURN); 
+        return movement;
     }
 
     /**
@@ -136,6 +137,23 @@ public class ConnectorDAO {
             case Parameter.BEHAVIOR_FOUR_WAY_HAZARD_LIGHT:
                 turnOnFourWayHazardLight();
                 break;
+                
+            case Parameter.BEHAVIOR_EMERGENCY_STOP:
+                performEmergencyStop();
+                break;
+            
+            case Parameter.BEHAVIOR_PULL_OVER:
+                performPullOver();
+                break;
+                
+            case Parameter.BEHAVIOR_CHANGE_LANE:
+                performChangeLane();
+                break;
+                
+            case Parameter.BEHAVIOR_U_TURN:
+                performUTurn();
+                break;
+            
         }
     }
     
@@ -191,4 +209,27 @@ public class ConnectorDAO {
         selectedVehicle.turnOffFourWayHazardLight();       
     }
     
+    public void performEmergencyStop(){
+        if (selectedVehicle==null)
+            return;
+        selectedVehicle.performEmergencyStop();   
+    }
+    
+    public void performPullOver(){
+        if (selectedVehicle==null)
+            return;
+        selectedVehicle.performPullOver();   
+    }
+    
+    public void performChangeLane(){
+        if (selectedVehicle==null)
+            return;
+        selectedVehicle.performChangeLane();   
+    }
+    
+    public void performUTurn(){
+        if (selectedVehicle==null)
+            return;
+        selectedVehicle.performUTurn();   
+    }
 }

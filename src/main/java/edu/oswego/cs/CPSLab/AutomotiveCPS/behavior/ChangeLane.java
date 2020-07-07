@@ -16,8 +16,8 @@ public class ChangeLane extends Behavior {
         super(car);
     }
 
-    public void changeLane(String received) {
-        if (this.offset > 23) {
+    public void changeLane() {
+        if (this.offset > 23 || (this.offset < 0 && this.offset > -30)) {
             car.sendMessage(new ChangeLaneMessage(this.offset - 48, 100, 100));
         } else {
             car.sendMessage(new ChangeLaneMessage(this.offset + 48, 100, 100));

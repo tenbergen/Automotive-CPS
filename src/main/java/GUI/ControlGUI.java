@@ -406,7 +406,7 @@ public class ControlGUI extends Application {
                     return;
                 
                 TreeItem<String> thisItem = treeCell.getTreeItem();
-                System.out.println("setOnDragOver"); 
+                //System.out.println("setOnDragOver"); 
                 
                 // can't drop on itself
                 if (draggedItem == null || thisItem == null || thisItem == draggedItem) 
@@ -419,17 +419,17 @@ public class ControlGUI extends Application {
                 Dragboard db = event.getDragboard();
                 if (db.hasString()) {
                     event.acceptTransferModes(TransferMode.MOVE);
-                    System.out.println("setOnDragOver");
+                    //System.out.println("setOnDragOver");
                 }
                 
             });
 
             treeCell.setOnDragDone(event -> {
-                System.out.println("TreeCell: setOnDragDone");           
+                //System.out.println("TreeCell: setOnDragDone");           
              });
 
             treeCell.setOnDragDropped(event -> {
-                System.out.println("TreeCell: setOnDragDropped");  
+                //System.out.println("TreeCell: setOnDragDropped");  
             });
 
             return treeCell;
@@ -468,7 +468,7 @@ public class ControlGUI extends Application {
                     ClipboardContent cc = new ClipboardContent();
                     cc.putString(listCell.getItem());
                     db.setContent(cc);
-                    System.out.println("listCell: setOnDragDetected");
+                    //System.out.println("listCell: setOnDragDetected");
                 }
             });
 
@@ -476,13 +476,13 @@ public class ControlGUI extends Application {
                 Dragboard db = event.getDragboard();
                 if (db.hasString()) {
                     event.acceptTransferModes(TransferMode.MOVE);
-                    System.out.println("listCell: setOnDragOver");
+                    //System.out.println("listCell: setOnDragOver");
                 }
             });
 
             listCell.setOnDragDone(event -> {
                 removeBehavior(listCell);
-                System.out.println("listCell: setOnDragDone");           
+                //System.out.println("listCell: setOnDragDone");           
              });
 
             listCell.setOnDragDropped(event -> {
@@ -495,7 +495,7 @@ public class ControlGUI extends Application {
                 } else {
                     event.setDropCompleted(false);
                 }
-                System.out.println("listCell: setOnDragDropped");   
+                //System.out.println("listCell: setOnDragDropped");   
             });
 
             return listCell;
@@ -530,7 +530,7 @@ public class ControlGUI extends Application {
             super.updateItem(item, empty);
             if (item != null){
                 String url = item.getImg();
-                System.out.println(url);
+                //System.out.println(url);
                 Image img = new Image(url);
                 ImageView iv = new ImageView(img);
                 iv.setFitWidth(60);
@@ -621,10 +621,25 @@ public class ControlGUI extends Application {
         }
         TreeCell<String> dragSourceCell = dragSource.get();
         if(!lv_current_behaviors.getItems().contains(dragSourceCell.getItem())){
-            lv_current_behaviors.getItems().add(dragSourceCell.getItem());
-            System.out.println("Add ++ "+dragSourceCell.getItem());
-            connectorDAO.getSelectedVehicle().addCurrentBehaviors(""+dragSourceCell.getItem());
-            connectorDAO.performBehavior(""+dragSourceCell.getItem());            
+            System.out.println("Add behavior ++ "+dragSourceCell.getItem());
+            switch (""+dragSourceCell.getItem()){
+                case Parameter.BEHAVIOR_EMERGENCY_STOP:
+                    showPopup(Parameter.BEHAVIOR_EMERGENCY_STOP+" has been performing");
+                    break;
+                case Parameter.BEHAVIOR_PULL_OVER:
+                    showPopup(Parameter.BEHAVIOR_PULL_OVER+" has been performing");
+                    break;
+                case Parameter.BEHAVIOR_CHANGE_LANE:
+                    showPopup(Parameter.BEHAVIOR_CHANGE_LANE+" has been performing");
+                    break;  
+                case Parameter.BEHAVIOR_U_TURN:
+                    showPopup(Parameter.BEHAVIOR_U_TURN+" has been performing");
+                    break; 
+                default:
+                    connectorDAO.getSelectedVehicle().addCurrentBehaviors(""+dragSourceCell.getItem());
+                    lv_current_behaviors.getItems().add(dragSourceCell.getItem());
+            }
+            connectorDAO.performBehavior(""+dragSourceCell.getItem());                             
         }
     }
     

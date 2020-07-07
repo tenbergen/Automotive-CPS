@@ -80,6 +80,7 @@ public class Parameter {
     public static final String BEHAVIOR_CHANGE_LANE = "Change Lane";
     public static final String BEHAVIOR_EMERGENCY_STOP = "Emergency Stop";
     public static final String BEHAVIOR_PULL_OVER = "Pull Over";
+    public static final String BEHAVIOR_U_TURN = "U Turn";
     
     /**
     * Message

@@ -5,10 +5,15 @@
  */
 package Controller;
 
+import de.adesso.anki.messages.SetSpeedMessage;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.BrakeLight;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.ChangeLane;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.DragRace;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.EmergencyLight;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.FourWayHazardLight;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.PullOver;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.UTurn;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,6 +39,10 @@ public class VehicleDAO {
     private BrakeLight brakeLight;
     private EmergencyLight emergencyLight;
     private FourWayHazardLight fourWayHazardLight;
+    
+    private PullOver pullOver;
+    private ChangeLane changeLane;
+    private UTurn uTurn;
 
     
     public List<String> getCurrentBehaviors() {
@@ -148,5 +157,34 @@ public class VehicleDAO {
         }
         this.fourWayHazardLight.turnOff();
         System.out.println("Turn off four way hazard light Vehicle DAO");
+    }
+    
+    public void performEmergencyStop(){
+        //Speed, Acceleration
+        this.cpsCar.sendMessage(new SetSpeedMessage(0, 12500));
+    }
+    
+    public void performPullOver(){
+        if (this.pullOver == null){
+            this.pullOver = new PullOver(this.cpsCar);
+        }
+        this.pullOver.run();
+        System.out.println("Pull Over is triggered");
+    }
+    
+    public void performChangeLane(){
+        if (this.changeLane == null){
+            this.changeLane = new ChangeLane(this.cpsCar);
+        }
+        this.changeLane.changeLane();
+        System.out.println("Change Lane is triggered");
+    }
+    
+    public void performUTurn(){
+        if (this.uTurn == null){
+            this.uTurn = new UTurn(this.cpsCar);
+        }
+        this.uTurn.run();
+        System.out.println("U Turn is triggered");
     }
 }

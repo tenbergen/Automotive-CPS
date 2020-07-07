@@ -187,4 +187,17 @@ public class VehicleDAO {
         this.uTurn.run();
         System.out.println("U Turn is triggered");
     }
+    
+    public void increaseSpeed(int amount){
+        int speed = this.cpsCar.getSpeed() + amount;
+        this.cpsCar.sendMessage(new SetSpeedMessage(speed, 12500));
+    }
+    
+    public void decreaseSpeed(int amount){
+        int speed = this.cpsCar.getSpeed() - amount;
+        if (speed<=0){
+            speed = 0;
+        }
+        this.cpsCar.sendMessage(new SetSpeedMessage(speed, 12500));
+    }
 }

@@ -8,6 +8,8 @@ package GUI;
 import Controller.ConnectorDAO;
 import Controller.VehicleDAO;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -47,6 +49,7 @@ public class ControlGUI extends Application {
     
     private Stage stage;
     private ConnectorDAO connectorDAO;
+    private UpdateRealTimeData updateRealTimeData;
   
     private ListView<VehicleDAO> lv_vehicles = new ListView<>();
     private ObservableList<VehicleDAO> observable_list_vehicles;
@@ -513,6 +516,10 @@ public class ControlGUI extends Application {
         //###################### SCENE ######################
         //***************************************************
         
+        updateRealTimeData = new UpdateRealTimeData();
+        updateRealTimeData.start();
+        
+        
         Scene scene = new Scene(grid, Parameter.WIDTH_SCENE_CONTROL, Parameter.HEIGHT_SCENE_CONTROL);
         scene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
         stage.setScene(scene);
@@ -574,26 +581,18 @@ public class ControlGUI extends Application {
     }
     
     private void adjustSpeed(boolean increase){
+        if (connectorDAO.getSelectedVehicle()==null){
+            showPopup(Parameter.MESSAGE_NO_SELECTED_VEHICLE);
+            return;
+        }
+        
         if (increase){
             System.out.println("Increase Speed >>> ");
-            showPopup("Hello");
-            //Increase Speed
-            
-            /*VehicleDAO vehicle = connectorDAO.getSelectedVehicle();
-            
-            vehicle.pullOver();
-            
-            
-            PullOver pullOver = new PullOver(vehicle.getCpsCar());
-            pullOver.run();
-            
-            System.out.println("Done");*/
-            
-            
+            connectorDAO.getSelectedVehicle().increaseSpeed(Parameter.SPEED_ADJUST);
         }
         else{
             System.out.println("Decrease Speed <<< ");
-            //Decrease Speed
+            connectorDAO.getSelectedVehicle().decreaseSpeed(Parameter.SPEED_ADJUST);
         }      
     }
     
@@ -653,6 +652,34 @@ public class ControlGUI extends Application {
         Scene dialogScene = new Scene(dialogVbox, 300, 200);
         dialog.setScene(dialogScene);
         dialog.show();
+    }
+    
+    class UpdateRealTimeData extends Thread{
+
+        @Override
+        public void run(){
+            while(true){
+                if (connectorDAO.getSelectedVehicle() == null){
+                    txt_control_parameter_speed.setText("Not detected");
+                    txt_control_parameter_offset.setText("Not detected");
+                    txt_control_parameter_battery.setText("Not detected");                   
+                }
+                else{
+                    txt_control_parameter_offset.setText(""+connectorDAO.getSelectedVehicle().getCpsCar().getOffset());
+                    txt_control_parameter_speed.setText(""+connectorDAO.getSelectedVehicle().getCpsCar().getSpeed());
+
+                    if(connectorDAO.getSelectedVehicle().getCpsCar().getVehicle().getAdvertisement().isCharging())
+                        txt_control_parameter_battery.setText("Charging");
+                    else
+                        txt_control_parameter_battery.setText("Not Charging");
+                }
+                try{
+                    Thread.sleep(100);
+                }catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
     }
     
 }

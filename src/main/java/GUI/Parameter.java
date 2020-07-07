@@ -82,6 +82,8 @@ public class Parameter {
     public static final String BEHAVIOR_PULL_OVER = "Pull Over";
     public static final String BEHAVIOR_U_TURN = "U Turn";
     
+    public static final int SPEED_ADJUST = 100;
+    
     /**
     * Message
     */

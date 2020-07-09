@@ -36,8 +36,10 @@ public class BrakeLight extends Behavior {
     public void run() {
         if (lightOn) {
             car.sendMessage(lpmOff);
+            lightOn = false;
         } else {
             car.sendMessage(lpmOn);
+            lightOn = true;
         }
     }
 

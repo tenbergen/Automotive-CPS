@@ -42,8 +42,10 @@ public class FourWayHazardLight extends Behavior {
     public void run() {
         if (lightOn) {
             car.sendMessage(lpmOff);
+            lightOn = false;
         } else {
             car.sendMessage(lpmOn);
+            lightOn = true;
         }
     }
 

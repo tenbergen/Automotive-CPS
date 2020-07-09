@@ -65,7 +65,7 @@ and open the template in the editor.
 
 #connection-grid{
     -fx-background-image: url("img/background-img.jpg");
-     -fx-background-size: 600px 400px;
+    -fx-background-size: 600px 400px;
 }
 
 #control-grid{
@@ -131,4 +131,24 @@ and open the template in the editor.
 #behavior-treeview .tree-cell{
     -fx-background-color: black;
     -fx-text-fill: white;
+}
+
+#message-vbox{
+    -fx-background-image: url("img/background-img.jpg");
+    -fx-border-color: white;
+    padding: 50px;    
+}
+
+#message-text{
+    -fx-font-size: 18px;
+    -fx-font-weight: bold;
+    -fx-effect: innershadow( three-pass-box , white, 6, 0.0 , 0 , 2 );
+    -fx-fill: #ff9600; 
+}
+
+#disconnect-button{
+    -fx-text-fill: black;
+    -fx-font-weight: bold;
+    -fx-background-color: #ff9600;
+    -fx-effect: innershadow( three-pass-box , rgb(204, 221, 255) , 10,0,0,1);
 }

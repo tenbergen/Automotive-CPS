@@ -24,7 +24,7 @@ public class CPSTestProgram {
      */
     public static void main(String[] args) throws IOException, InterruptedException {
         System.out.println("Launching connector...");
-        AnkiConnector anki = new AnkiConnector("192.168.1.100", 5000);
+        AnkiConnector anki = new AnkiConnector("192.168.1.101", 5000);
         System.out.println("...looking for cars...");
         List<Vehicle> vehicles = anki.findVehicles(); // Add the CPSCar class to AnkiConnector?
         List<CPSCar> cars = new ArrayList<>();

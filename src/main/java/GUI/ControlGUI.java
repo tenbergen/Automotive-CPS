@@ -7,6 +7,7 @@ package GUI;
 
 import Controller.ConnectorDAO;
 import Controller.VehicleDAO;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -74,7 +75,8 @@ public class ControlGUI extends Application {
     @Override
     public void stop(){
         System.out.println("Stage is closing");
-        connectorDAO.getAnkiConnector().close();
+        disconnect();
+        stage.close();
     }
     
     @Override
@@ -513,6 +515,27 @@ public class ControlGUI extends Application {
         
         
         //***************************************************
+        //################ Disconnect Button ################
+        //***************************************************
+        Button btn_disconnect = new Button("Disconnect");
+        btn_disconnect.setId("disconnect-button");
+        btn_disconnect.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                disconnect();
+                
+                //Call Connect stage
+                Stage connectStage = new Stage();
+                ConnectGUI connectGUI = new ConnectGUI();
+                connectGUI.start(connectStage);
+                connectStage.show();
+                    
+                stage.close();
+            }
+        });
+        grid.add(btn_disconnect, 0,2);
+        
+        //***************************************************
         //###################### SCENE ######################
         //***************************************************
         
@@ -647,18 +670,35 @@ public class ControlGUI extends Application {
         final Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(this.stage);
-        VBox dialogVbox = new VBox(20);
-        dialogVbox.getChildren().add(new Text(message));
-        Scene dialogScene = new Scene(dialogVbox, 300, 200);
+        
+        VBox dialogVbox = new VBox(Parameter.BOX_VGAP);
+        dialogVbox.setAlignment(Pos.CENTER);
+        dialogVbox.setId("message-vbox");
+        
+        Text txt_message = new Text(message);
+        txt_message.setId("message-text");
+        dialogVbox.getChildren().add(txt_message);
+        
+        Button btn_message = new Button("OK");
+        btn_message.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+               dialog.close();
+            }
+        });
+        dialogVbox.getChildren().add(btn_message);
+        
+        Scene dialogScene = new Scene(dialogVbox, Parameter.WIDTH_SCENE_POPUP, Parameter.HEIGHT_SCENE_POPUP);
+        dialogScene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
         dialog.setScene(dialogScene);
         dialog.show();
     }
     
     class UpdateRealTimeData extends Thread{
-
+        boolean status = true;
         @Override
         public void run(){
-            while(true){
+            while(status){
                 if (connectorDAO.getSelectedVehicle() == null){
                     txt_control_parameter_speed.setText("Not detected");
                     txt_control_parameter_offset.setText("Not detected");
@@ -679,6 +719,21 @@ public class ControlGUI extends Application {
                     ex.printStackTrace();
                 }
             }
+        }
+        public void exit(){
+            this.status = false;
+        }
+    }
+    
+    public void disconnect(){
+        try{
+            System.out.println("Disconnenct");
+            updateRealTimeData.exit();
+            updateRealTimeData.join();
+            connectorDAO.disconnect();  
+        }
+        catch(Exception e){
+            e.printStackTrace();
         }
     }
     

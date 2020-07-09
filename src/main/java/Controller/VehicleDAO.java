@@ -200,4 +200,18 @@ public class VehicleDAO {
         }
         this.cpsCar.sendMessage(new SetSpeedMessage(speed, 12500));
     }
+    
+    public void disconnect(){
+        try{
+            brakeLight = null;
+            emergencyLight = null;
+            fourWayHazardLight = null;
+            pullOver = null;
+            changeLane = null;
+            uTurn = null;
+            cpsCar.disconnect();
+        }catch(Exception e){
+            e.printStackTrace();
+        }
+    }
 }

@@ -33,6 +33,17 @@ public class ConnectorDAO {
         this.vehicles = new ArrayList<>();
     }
     
+    public void disconnect(){
+        for (VehicleDAO v: vehicles){
+            v.disconnect();
+        }
+        
+        //vehicles.clear();
+        //selectedVehicle.disconnect();
+        existedVehicles.clear();
+        ankiConnector.close();
+    }
+    
     public AnkiConnector getAnkiConnector(){
         return ankiConnector;
     }

@@ -397,8 +397,9 @@ public class CPSCar {
 //disconnect - stop the thread
     public void disconnect() throws InterruptedException {
         v.disconnect();
-        t.join();
         receiver.stopMC();
+        t.join();
+      
     }
 
 //    

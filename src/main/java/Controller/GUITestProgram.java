@@ -26,12 +26,35 @@ public class GUITestProgram {
         
         String ip = "192.168.1.101";
         int port = 5000;
-               
-        ConnectorDAO connector = new ConnectorDAO(ip,port); 
+        
         System.out.println("Launching connector...");
-        
-        connector.updateVehicles();
-        
+        AnkiConnector anki = new AnkiConnector(ip, port);
+        System.out.println("...looking for cars...");
+        List<Vehicle> vehicles = anki.findVehicles(); // Add the CPSCar class to AnkiConnector?
+        List<CPSCar> cars = new ArrayList<>();
+        // int random = (int) (Math.random() * 200);
+
+        if (vehicles.isEmpty()) {
+            System.out.println(" NO CARS FOUND. I guess that means we're done.");
+
+        } else {
+            System.out.println(vehicles.toString());
+            CPSCar cps1 = new CPSCar(vehicles.get(0));
+            CPSCar cps2 = new CPSCar(vehicles.get(1));
+            cars.add(cps1);
+            cars.add(cps2);
+            boolean quit = false;
+            Scanner kb = new Scanner(System.in);
+            while (!quit) {
+                if (kb.nextLine().equalsIgnoreCase("q")) {
+                    System.out.println("Confirm Quit");
+                    quit = true;
+                }
+            }
+            for (CPSCar c : cars) {
+                c.disconnect();
+            }
+        }
       
 
     }

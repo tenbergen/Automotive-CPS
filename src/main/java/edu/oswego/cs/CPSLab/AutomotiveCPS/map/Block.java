@@ -44,6 +44,14 @@ public class Block {
             return this.a == a && this.b == b;
         }
 
+        public void assignPieceId(Integer a) {
+            this.a = a;
+        }
+
+        public void assignReverse(Boolean b) {
+            this.b = b;
+        }
+
         public void assignPiece(Roadpiece c) {
             this.c = c;
         }
@@ -52,10 +60,6 @@ public class Block {
             this.d = d;
         }
         
-        public void assignPieceId(Integer a) {
-            this.a = a;
-        }
-
         public String toString() {
             return "(" + a + "," + b + "," + c + "," + d + ")";
         }

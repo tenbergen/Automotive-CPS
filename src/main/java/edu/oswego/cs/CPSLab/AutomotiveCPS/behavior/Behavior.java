@@ -4,7 +4,7 @@
 package edu.oswego.cs.CPSLab.AutomotiveCPS.behavior;
 
 import edu.oswego.cs.CPSLab.AutomotiveCPS.*;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Map;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import de.adesso.anki.roadmap.Roadmap;
 import de.adesso.anki.roadmap.Section;
 
@@ -15,7 +15,7 @@ import de.adesso.anki.roadmap.Section;
 public abstract class Behavior {
 
     protected CPSCar car;
-    protected Map map;
+    protected RoadmapManager map;
     protected int locationId;
     protected int pieceId;
     protected int virtualId;

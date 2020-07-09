@@ -4,7 +4,7 @@
 package edu.oswego.cs.CPSLab.AutomotiveCPS.behavior;
 
 import edu.oswego.cs.CPSLab.AutomotiveCPS.*;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Map;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import de.adesso.anki.messages.SetSpeedMessage;
 import de.adesso.anki.roadmap.Roadmap;
 import de.adesso.anki.roadmap.roadpieces.Roadpiece;
@@ -32,7 +32,7 @@ public class EmergencyStop extends Behavior {
         }
     }
 
-    private boolean carsAreClose(Map roadmap, String[] parsed) {
+    private boolean carsAreClose(RoadmapManager roadmap, String[] parsed) {
         int piece = Integer.parseInt(parsed[1]);
         int location = Integer.parseInt(parsed[2]);
         if (!reverse) {

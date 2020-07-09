@@ -47,6 +47,9 @@ public class Parameter {
     public static final int WIDTH_SCENE_CONTROL = 1000;
     public static final int HEIGHT_SCENE_CONTROL = 800;
     
+    public static final int WIDTH_SCENE_POPUP = 300;
+    public static final int HEIGHT_SCENE_POPUP = 200;
+    
     /**
      * Size of Icon
      */  
@@ -80,6 +83,9 @@ public class Parameter {
     public static final String BEHAVIOR_CHANGE_LANE = "Change Lane";
     public static final String BEHAVIOR_EMERGENCY_STOP = "Emergency Stop";
     public static final String BEHAVIOR_PULL_OVER = "Pull Over";
+    public static final String BEHAVIOR_U_TURN = "U Turn";
+    
+    public static final int SPEED_ADJUST = 100;
     
     /**
     * Message

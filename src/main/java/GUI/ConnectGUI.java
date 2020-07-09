@@ -155,12 +155,19 @@ public class ConnectGUI extends Application {
         return this.grid;
     }
     
+    @Override
+    public void stop(){
+        System.out.println("Stage is closing");
+        System.exit(0);
+    }
+    
     public static void main(String[] args) {
         launch(args);
     }
     
     public class LoadingThread extends Thread {
 
+        @Override
         public void run(){
            System.out.println("MyThread running");
            //Progress bar 

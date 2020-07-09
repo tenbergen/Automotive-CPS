@@ -7,7 +7,10 @@ package GUI;
 
 import Controller.ConnectorDAO;
 import Controller.VehicleDAO;
+import java.util.HashSet;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.application.Application;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -47,6 +50,7 @@ public class ControlGUI extends Application {
     
     private Stage stage;
     private ConnectorDAO connectorDAO;
+    private UpdateRealTimeData updateRealTimeData;
   
     private ListView<VehicleDAO> lv_vehicles = new ListView<>();
     private ObservableList<VehicleDAO> observable_list_vehicles;
@@ -71,7 +75,8 @@ public class ControlGUI extends Application {
     @Override
     public void stop(){
         System.out.println("Stage is closing");
-        connectorDAO.getAnkiConnector().close();
+        disconnect();
+        stage.close();
     }
     
     @Override
@@ -406,7 +411,7 @@ public class ControlGUI extends Application {
                     return;
                 
                 TreeItem<String> thisItem = treeCell.getTreeItem();
-                System.out.println("setOnDragOver"); 
+                //System.out.println("setOnDragOver"); 
                 
                 // can't drop on itself
                 if (draggedItem == null || thisItem == null || thisItem == draggedItem) 
@@ -419,17 +424,17 @@ public class ControlGUI extends Application {
                 Dragboard db = event.getDragboard();
                 if (db.hasString()) {
                     event.acceptTransferModes(TransferMode.MOVE);
-                    System.out.println("setOnDragOver");
+                    //System.out.println("setOnDragOver");
                 }
                 
             });
 
             treeCell.setOnDragDone(event -> {
-                System.out.println("TreeCell: setOnDragDone");           
+                //System.out.println("TreeCell: setOnDragDone");           
              });
 
             treeCell.setOnDragDropped(event -> {
-                System.out.println("TreeCell: setOnDragDropped");  
+                //System.out.println("TreeCell: setOnDragDropped");  
             });
 
             return treeCell;
@@ -468,7 +473,7 @@ public class ControlGUI extends Application {
                     ClipboardContent cc = new ClipboardContent();
                     cc.putString(listCell.getItem());
                     db.setContent(cc);
-                    System.out.println("listCell: setOnDragDetected");
+                    //System.out.println("listCell: setOnDragDetected");
                 }
             });
 
@@ -476,13 +481,13 @@ public class ControlGUI extends Application {
                 Dragboard db = event.getDragboard();
                 if (db.hasString()) {
                     event.acceptTransferModes(TransferMode.MOVE);
-                    System.out.println("listCell: setOnDragOver");
+                    //System.out.println("listCell: setOnDragOver");
                 }
             });
 
             listCell.setOnDragDone(event -> {
                 removeBehavior(listCell);
-                System.out.println("listCell: setOnDragDone");           
+                //System.out.println("listCell: setOnDragDone");           
              });
 
             listCell.setOnDragDropped(event -> {
@@ -495,7 +500,7 @@ public class ControlGUI extends Application {
                 } else {
                     event.setDropCompleted(false);
                 }
-                System.out.println("listCell: setOnDragDropped");   
+                //System.out.println("listCell: setOnDragDropped");   
             });
 
             return listCell;
@@ -510,8 +515,33 @@ public class ControlGUI extends Application {
         
         
         //***************************************************
+        //################ Disconnect Button ################
+        //***************************************************
+        Button btn_disconnect = new Button("Disconnect");
+        btn_disconnect.setId("disconnect-button");
+        btn_disconnect.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                disconnect();
+                
+                //Call Connect stage
+                Stage connectStage = new Stage();
+                ConnectGUI connectGUI = new ConnectGUI();
+                connectGUI.start(connectStage);
+                connectStage.show();
+                    
+                stage.close();
+            }
+        });
+        grid.add(btn_disconnect, 0,2);
+        
+        //***************************************************
         //###################### SCENE ######################
         //***************************************************
+        
+        updateRealTimeData = new UpdateRealTimeData();
+        updateRealTimeData.start();
+        
         
         Scene scene = new Scene(grid, Parameter.WIDTH_SCENE_CONTROL, Parameter.HEIGHT_SCENE_CONTROL);
         scene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
@@ -530,7 +560,7 @@ public class ControlGUI extends Application {
             super.updateItem(item, empty);
             if (item != null){
                 String url = item.getImg();
-                System.out.println(url);
+                //System.out.println(url);
                 Image img = new Image(url);
                 ImageView iv = new ImageView(img);
                 iv.setFitWidth(60);
@@ -574,26 +604,18 @@ public class ControlGUI extends Application {
     }
     
     private void adjustSpeed(boolean increase){
+        if (connectorDAO.getSelectedVehicle()==null){
+            showPopup(Parameter.MESSAGE_NO_SELECTED_VEHICLE);
+            return;
+        }
+        
         if (increase){
             System.out.println("Increase Speed >>> ");
-            showPopup("Hello");
-            //Increase Speed
-            
-            /*VehicleDAO vehicle = connectorDAO.getSelectedVehicle();
-            
-            vehicle.pullOver();
-            
-            
-            PullOver pullOver = new PullOver(vehicle.getCpsCar());
-            pullOver.run();
-            
-            System.out.println("Done");*/
-            
-            
+            connectorDAO.getSelectedVehicle().increaseSpeed(Parameter.SPEED_ADJUST);
         }
         else{
             System.out.println("Decrease Speed <<< ");
-            //Decrease Speed
+            connectorDAO.getSelectedVehicle().decreaseSpeed(Parameter.SPEED_ADJUST);
         }      
     }
     
@@ -621,10 +643,25 @@ public class ControlGUI extends Application {
         }
         TreeCell<String> dragSourceCell = dragSource.get();
         if(!lv_current_behaviors.getItems().contains(dragSourceCell.getItem())){
-            lv_current_behaviors.getItems().add(dragSourceCell.getItem());
-            System.out.println("Add ++ "+dragSourceCell.getItem());
-            connectorDAO.getSelectedVehicle().addCurrentBehaviors(""+dragSourceCell.getItem());
-            connectorDAO.performBehavior(""+dragSourceCell.getItem());            
+            System.out.println("Add behavior ++ "+dragSourceCell.getItem());
+            switch (""+dragSourceCell.getItem()){
+                case Parameter.BEHAVIOR_EMERGENCY_STOP:
+                    showPopup(Parameter.BEHAVIOR_EMERGENCY_STOP+" has been performing");
+                    break;
+                case Parameter.BEHAVIOR_PULL_OVER:
+                    showPopup(Parameter.BEHAVIOR_PULL_OVER+" has been performing");
+                    break;
+                case Parameter.BEHAVIOR_CHANGE_LANE:
+                    showPopup(Parameter.BEHAVIOR_CHANGE_LANE+" has been performing");
+                    break;  
+                case Parameter.BEHAVIOR_U_TURN:
+                    showPopup(Parameter.BEHAVIOR_U_TURN+" has been performing");
+                    break; 
+                default:
+                    connectorDAO.getSelectedVehicle().addCurrentBehaviors(""+dragSourceCell.getItem());
+                    lv_current_behaviors.getItems().add(dragSourceCell.getItem());
+            }
+            connectorDAO.performBehavior(""+dragSourceCell.getItem());                             
         }
     }
     
@@ -633,11 +670,71 @@ public class ControlGUI extends Application {
         final Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(this.stage);
-        VBox dialogVbox = new VBox(20);
-        dialogVbox.getChildren().add(new Text(message));
-        Scene dialogScene = new Scene(dialogVbox, 300, 200);
+        
+        VBox dialogVbox = new VBox(Parameter.BOX_VGAP);
+        dialogVbox.setAlignment(Pos.CENTER);
+        dialogVbox.setId("message-vbox");
+        
+        Text txt_message = new Text(message);
+        txt_message.setId("message-text");
+        dialogVbox.getChildren().add(txt_message);
+        
+        Button btn_message = new Button("OK");
+        btn_message.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+               dialog.close();
+            }
+        });
+        dialogVbox.getChildren().add(btn_message);
+        
+        Scene dialogScene = new Scene(dialogVbox, Parameter.WIDTH_SCENE_POPUP, Parameter.HEIGHT_SCENE_POPUP);
+        dialogScene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
         dialog.setScene(dialogScene);
         dialog.show();
+    }
+    
+    class UpdateRealTimeData extends Thread{
+        boolean status = true;
+        @Override
+        public void run(){
+            while(status){
+                if (connectorDAO.getSelectedVehicle() == null){
+                    txt_control_parameter_speed.setText("Not detected");
+                    txt_control_parameter_offset.setText("Not detected");
+                    txt_control_parameter_battery.setText("Not detected");                   
+                }
+                else{
+                    txt_control_parameter_offset.setText(""+connectorDAO.getSelectedVehicle().getCpsCar().getOffset());
+                    txt_control_parameter_speed.setText(""+connectorDAO.getSelectedVehicle().getCpsCar().getSpeed());
+
+                    if(connectorDAO.getSelectedVehicle().getCpsCar().getVehicle().getAdvertisement().isCharging())
+                        txt_control_parameter_battery.setText("Charging");
+                    else
+                        txt_control_parameter_battery.setText("Not Charging");
+                }
+                try{
+                    Thread.sleep(100);
+                }catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+            }
+        }
+        public void exit(){
+            this.status = false;
+        }
+    }
+    
+    public void disconnect(){
+        try{
+            System.out.println("Disconnenct");
+            updateRealTimeData.exit();
+            updateRealTimeData.join();
+            connectorDAO.disconnect();  
+        }
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
     
 }

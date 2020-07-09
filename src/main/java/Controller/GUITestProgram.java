@@ -1,30 +1,34 @@
 /*
- * Testing the CPSCar Class
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
  */
-package edu.oswego.cs.CPSLab.AutomotiveCPS;
+package Controller;
 
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.Vehicle;
-import de.adesso.anki.messages.SdkModeMessage;
-import de.adesso.anki.messages.SetSpeedMessage;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.Scanner;
 
 /**
  *
- * @author notebook
+ * @author HN
  */
-public class CPSTestProgram {
-
+public class GUITestProgram {
+    
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, InterruptedException {
+        
+        String ip = "192.168.1.101";
+        int port = 5000;
+        
         System.out.println("Launching connector...");
-        AnkiConnector anki = new AnkiConnector("192.168.1.101", 5000);
+        AnkiConnector anki = new AnkiConnector(ip, port);
         System.out.println("...looking for cars...");
         List<Vehicle> vehicles = anki.findVehicles(); // Add the CPSCar class to AnkiConnector?
         List<CPSCar> cars = new ArrayList<>();
@@ -43,6 +47,7 @@ public class CPSTestProgram {
             Scanner kb = new Scanner(System.in);
             while (!quit) {
                 if (kb.nextLine().equalsIgnoreCase("q")) {
+                    System.out.println("Confirm Quit");
                     quit = true;
                 }
             }
@@ -50,6 +55,7 @@ public class CPSTestProgram {
                 c.disconnect();
             }
         }
-    }
+      
 
+    }
 }

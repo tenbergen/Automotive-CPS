@@ -42,6 +42,10 @@ public class RoadmapManager {
     public Roadmap getMap() {
         return map;
     }
+    
+    public List<Block> getTrack(){
+        return this.track;
+    }
 
     public void generateTrack() {
         List<Roadpiece> pieces = map.toList();

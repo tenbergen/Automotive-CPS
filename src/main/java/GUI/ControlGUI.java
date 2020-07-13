@@ -7,7 +7,7 @@ package GUI;
 
 import Controller.ConnectorDAO;
 import Controller.VehicleDAO;
-import java.util.HashSet;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -51,6 +51,17 @@ public class ControlGUI extends Application {
     private Stage stage;
     private ConnectorDAO connectorDAO;
     private UpdateRealTimeData updateRealTimeData;
+    private ScanTrack scanTrack;
+    private static boolean scan_complete = false;
+    private List<Block> tracks;
+
+    public static boolean isScan_complete() {
+        return scan_complete;
+    }
+
+    public static void setScan_complete(boolean scan_complete) {
+        ControlGUI.scan_complete = scan_complete;
+    }
   
     private ListView<VehicleDAO> lv_vehicles = new ListView<>();
     private ObservableList<VehicleDAO> observable_list_vehicles;
@@ -542,7 +553,8 @@ public class ControlGUI extends Application {
         updateRealTimeData = new UpdateRealTimeData();
         updateRealTimeData.start();
         
-        
+        startScanTrack();
+               
         Scene scene = new Scene(grid, Parameter.WIDTH_SCENE_CONTROL, Parameter.HEIGHT_SCENE_CONTROL);
         scene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
         stage.setScene(scene);
@@ -734,6 +746,47 @@ public class ControlGUI extends Application {
         }
         catch(Exception e){
             e.printStackTrace();
+        }
+    }
+    
+    public void startScanTrack(){
+        this.scanTrack = new ScanTrack();
+        this.scanTrack.start();
+    }
+    
+    public void setTrack(){
+        tracks = connectorDAO.getVehicles().get(0).getCpsCar().getMap().getTrack();
+        for (Block track: tracks){
+            System.out.println("GUI Track -- "+track.getPieceId()+" -- "+track.getReverse());
+        }
+    }
+    
+    public void handleTrack(){
+        //33 - Start
+        //reverse - True - right || false - left
+    }
+    
+    public class ScanTrack extends Thread{
+
+        @Override
+        public void run(){
+            System.out.println("GUI - Start scanning track");
+            if (connectorDAO.getVehicles().isEmpty()){
+                System.out.println("No vehicle to scan");
+                return;
+            }
+            System.out.println("GUI - Scan track of "+connectorDAO.getVehicles().get(0).getCpsCar().getVehicle());
+            //while(!connectorDAO.getVehicles().get(0).getCpsCar().getScan().isComplete()){}
+            while(!ControlGUI.isScan_complete()){
+                System.out.println("GUI scan_complete: "+ControlGUI.isScan_complete());
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ControlGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            System.out.println("GUI - Track scanning has been finished");
+            setTrack();
         }
     }
     

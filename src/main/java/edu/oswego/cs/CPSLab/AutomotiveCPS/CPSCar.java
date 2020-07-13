@@ -1,5 +1,6 @@
 package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
+import GUI.ControlGUI;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import de.adesso.anki.AdvertisementData;
 import de.adesso.anki.AnkiConnector;
@@ -67,6 +68,7 @@ public class CPSCar {
 
     private RoadmapScanner scan;
     private boolean scanStarted;
+    private boolean scanFinished;
     private ArrayList<Integer> pieceIDs;
     private ArrayList<Boolean> reverses;
     private Follow follow;
@@ -125,6 +127,10 @@ public class CPSCar {
 //        } catch (Exception e){
 //            System.out.println("meh..." + e.getMessage());
 //        }
+    }
+
+    public RoadmapScanner getScan() {
+        return scan;
     }
 
     public String getAddress() {
@@ -286,7 +292,13 @@ public class CPSCar {
                         System.out.println(tempMap.toList());
                         this.map = new RoadmapManager(tempMap, this.reverse, pieceIDs, reverses);
                         map.generateTrack();
-                        System.out.println(v.getAdvertisement().getModel().name() + ": Track Completed... ");
+                        System.out.println(v.getAdvertisement().getModel().name() + ": Track Completed... ");  
+                        
+                        /*
+                        * Notify GUI scanning track is completed
+                        */
+                        ControlGUI.setScan_complete(true);
+                        
                         try {
                             Thread.sleep(10);
                         } catch (InterruptedException ex) {

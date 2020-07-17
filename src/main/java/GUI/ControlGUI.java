@@ -8,7 +8,9 @@ package GUI;
 import Controller.ConnectorDAO;
 import Controller.MapDAO;
 import Controller.VehicleDAO;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -52,8 +54,13 @@ public class ControlGUI extends Application {
     
     private Stage stage;
     private ConnectorDAO connectorDAO;
+    
+    
     private MapDAO mapDAO;
     private List<MapDAO> maps = new ArrayList<>();
+    List<RoadmapManager> roadmapManagers = new ArrayList<>();
+    
+    
     private UpdateRealTimeData updateRealTimeData;
     private ScanTrack scanTrack;
     private static boolean scan_complete = false;
@@ -801,16 +808,38 @@ public class ControlGUI extends Application {
                 for(int i=0;i<n;i++){
                     if(check[i])
                         continue;
-                    System.out.println("GUI scanning: "+i);
+                    CPSCar c = connectorDAO.getVehicles().get(i).getCpsCar();
+                    if (c.scanDone()) {
+                        finished = true;
+                        check[i] = true;
+                        System.out.println(c.getAddress() + ": Scan Done... ");
+                        for (RoadmapManager rm : roadmapManagers) {
+                            if (c.getMap().equals(rm.getMap())) {
+                                System.out.println("Same manager...");
+                                c.setRoadmapMannager(rm);
+                            }
+                        }
+                        if (c.getManager() == null) {
+                            System.out.println("New manager...");
+                            RoadmapManager rm = new RoadmapManager(c.getMap(), c.getReverse(), c.getPieceIDs(), c.getReverses());
+                            roadmapManagers.add(rm);
+                            c.setRoadmapMannager(rm);
+                            rm.setID(roadmapManagers.indexOf(rm));
+                        }
+                    }
+                    else
+                        finished = false;
+                    
+                    /*System.out.println("GUI scanning: "+i);
                     VehicleDAO vehicleDAO = connectorDAO.getVehicles().get(i);
-                    if(vehicleDAO.isScanCompeleted()){
-                        //setTrack(vehicleDAO.getCpsCar().getMap().getTrack());
-                        System.out.println("GUI scan_complete: "+vehicleDAO.isScanCompeleted());
+                    if(vehicleDAO.getCpsCar().getManager()!=null){
+                        setTrack(vehicleDAO.getCpsCar().getManager().getTrack());
+                        System.out.println("GUI scan complete: "+i);
                         finished = true;
                         check[i] = true;
                     }
                     else
-                        finished = false;
+                        finished = false;*/
                 }
                 try {
                     Thread.sleep(500);
@@ -818,6 +847,12 @@ public class ControlGUI extends Application {
                     Logger.getLogger(ControlGUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
+            
+            //All vehicles are completed
+            System.out.println("GUI - SCAN FULLY COMPLETED");
+            System.out.println("GUI - RoadmapManager Size "+roadmapManagers.size());
+            
+            
             /*if (vehicleDAO==null){
                 System.out.println("No vehicle to scan");
                 return;

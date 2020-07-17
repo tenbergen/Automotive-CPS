@@ -88,9 +88,7 @@ public class ConnectorDAO {
             for (Vehicle v : lst) {
                 String key = ""+v.getAdvertisement().getIdentifier();
                 System.out.print("Get car: "+v.getAdvertisement().getModel());
-
-                addVehicle(v);  
-                
+                addVehicle(v);                
             }
             runVehicles();
         }     
@@ -105,7 +103,7 @@ public class ConnectorDAO {
             return;
         for (VehicleDAO v: vehicles){
             v.getCpsCar().getVehicle().connect();
-            //v.getCpsCar().getVehicle().sendMessage(new SdkModeMessage());
+            v.getCpsCar().getVehicle().sendMessage(new SdkModeMessage());
             v.getCpsCar().getVehicle().sendMessage(new SetSpeedMessage(500, 100));
         }
     }

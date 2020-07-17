@@ -28,7 +28,7 @@ public abstract class Behavior {
 
     public Behavior(CPSCar car) {
         this.car = car;
-        this.map = car.getMap();
+        this.map = car.getManager();
     }
 
     public void updateInfo() {

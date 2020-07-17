@@ -13,6 +13,7 @@ import de.adesso.anki.roadmap.roadpieces.IntersectionRoadpiece;
 import de.adesso.anki.roadmap.roadpieces.StartRoadpiece;
 import de.adesso.anki.roadmap.roadpieces.StraightRoadpiece;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -37,28 +38,35 @@ public class RoadmapManager {
         this.reverses = reverses;
         track = new ArrayList<Block>();
         intersections = new ArrayList<Intersection>();
+        generateTrack();
     }
 
     public Roadmap getMap() {
         return map;
     }
 
-    public void generateTrack() {
+    private void generateTrack() {
         List<Roadpiece> pieces = map.toList();
         if (rev) {
-            track.add(new Block(pieceIDs.get(0), !reverses.get(0)));
-            track.get(0).assignPiece(pieces.get(0));
-            for (int i = pieces.size() - 1; i > 0; i--) {
-                track.add(new Block(pieceIDs.get(i), !reverses.get(i)));
-                track.get(track.size() - 1).assignPiece(pieces.get(i));
+            Collections.reverse(pieceIDs);
+            Collections.rotate(pieceIDs, 1);
+            Collections.reverse(reverses);
+            Collections.rotate(reverses, 1);
+            for (boolean r : reverses) {
+                r = !r;
             }
-            map.reverse();
-            map.normalize();
-        } else {
-            for (int i = 0; i < pieces.size(); i++) {
+        }
+        for (int i = 0; i < pieces.size(); i++) {
+            if (pieces.get(i).getType().equals(IntersectionRoadpiece.class.getSimpleName())) {
+                if (pieceIDs.get(i) != 10) {
+                    pieceIDs.add(i, 10);
+                    reverses.add(i, false);
+                }
+                track.add(new Block(10, false));
+            } else {
                 track.add(new Block(pieceIDs.get(i), reverses.get(i)));
-                track.get(i).assignPiece(pieces.get(i));
             }
+            track.get(i).assignPiece(pieces.get(i));
         }
         for (int x = 0; x < track.size(); x++) {
             track.get(x).assignSection(track.get(x).getPiece().getSectionByLocation(0, false));
@@ -146,6 +154,14 @@ public class RoadmapManager {
         return null;
     }
 
+    public void setID(int id) {
+        this.id = id;
+    }
+
+    public int getID() {
+        return id;
+    }
+
     public boolean sameIntersection(int piece, int otherPiece) {
         for (Intersection i : intersections) {
             if (otherPiece == i.relatedPiece(piece)) {
@@ -158,8 +174,8 @@ public class RoadmapManager {
     private void generateIntersections() {
         // Look for all intersection pieces, record their piece number
         ArrayList<Integer> numbers = new ArrayList<>();
-        for (int i = 0; i < map.toList().size(); i++) {
-            if (map.toList().get(i).getType().equals(IntersectionRoadpiece.class.getSimpleName())) {
+        for (int i = 0; i < track.size(); i++) {
+            if (track.get(i).getPiece().getType().equals(IntersectionRoadpiece.class.getSimpleName())) {
                 numbers.add(i);
             }
         }
@@ -210,7 +226,7 @@ public class RoadmapManager {
                 list.add(track.get(i));
             }
         } else {
-            if (a != map.getLength() - 1) {
+            if (a != track.size() - 1) {
                 for (int i = a + 1; i < track.size(); i++) {
                     list.add(track.get(i));
                 }

@@ -804,7 +804,7 @@ public class ControlGUI extends Application {
                     System.out.println("GUI scanning: "+i);
                     VehicleDAO vehicleDAO = connectorDAO.getVehicles().get(i);
                     if(vehicleDAO.isScanCompeleted()){
-                        setTrack(vehicleDAO.getCpsCar().getMap().getTrack());
+                        //setTrack(vehicleDAO.getCpsCar().getMap().getTrack());
                         System.out.println("GUI scan_complete: "+vehicleDAO.isScanCompeleted());
                         finished = true;
                         check[i] = true;

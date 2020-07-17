@@ -69,8 +69,10 @@ public class CPSCar {
     private RoadmapScanner scan;
     private boolean scanStarted;
     private boolean scanFinished=false;
+    private boolean scanDone;
     private ArrayList<Integer> pieceIDs;
     private ArrayList<Boolean> reverses;
+    private Roadmap tempMap;
     private Follow follow;
     private EmergencyStop emergStop;
     private Overtake over;
@@ -106,8 +108,8 @@ public class CPSCar {
         approachingIntersection = false;
         t = new Thread(new PositionUpdater());
         t.start();
-        //Thread receiver = new Thread(new MulticastReceiver(v.getAdvertisement().getModel().name()));
-        //receiver.start();
+        receiver = new MulticastReceiver(v.getAdvertisement().getModel().name());
+        receiver.start();
         publisher = new MulticastPublisher();
         follow = new Follow(this);
         emergStop = new EmergencyStop(this);
@@ -116,6 +118,7 @@ public class CPSCar {
 
         scan = new RoadmapScanner(v);
         scanStarted = false;
+        scanDone = false;
         pieceIDs = new ArrayList<Integer>();
         reverses = new ArrayList<Boolean>();
 
@@ -141,13 +144,36 @@ public class CPSCar {
         return v.getAddress();
     }
 
-    public RoadmapManager getMap() {
+    public boolean scanDone() {
+        return scanDone;
+    }
+
+    public ArrayList<Integer> getPieceIDs() {
+        return pieceIDs;
+    }
+
+    public ArrayList<Boolean> getReverses() {
+        return reverses;
+    }
+
+    public Roadmap getMap() {
+        return tempMap;
+    }
+
+    public void setRoadmapMannager(RoadmapManager rm) {
+        scanDone = false;
+        this.map = rm;
+        System.out.println(v.getAdvertisement().getModel().name() + ": Track Completed... ");
+    }
+
+    public RoadmapManager getManager() {
         return map;
     }
-    public Vehicle getVehicle(){
+
+    public Vehicle getVehicle() {
         return v;
     }
-      
+
     public int getLocationId() {
         return locationId;
     }
@@ -206,6 +232,7 @@ public class CPSCar {
      */
     private void updateCPSNetwork(String[] parsed) {
         String self = v.getAddress();
+        int mapID = map.getID();
         if (inCarList(parsed[0]) != -1) {
             int piece = Integer.parseInt(parsed[1]);
             time.set(inCarList(parsed[0]), date.getTime());
@@ -225,16 +252,20 @@ public class CPSCar {
             if (this.virtualId != -1) {
                 if (!self.equals(parsed[0])) {
                     int piece = Integer.parseInt(parsed[1]);
-                    if (piece <= (virtualId + 2) % (map.size()) && piece >= (virtualId - 2) % (map.size())) {
-                        cars.add(parsed);
-                        time.add(date.getTime());
+                    if (mapID == Integer.parseInt(parsed[9])) {
+                        if (piece <= (virtualId + 2) % (map.size()) && piece >= (virtualId - 2) % (map.size())) {
+                            cars.add(parsed);
+                            time.add(date.getTime());
+                            if (approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection((virtualId + 1) % map.size(), Integer.parseInt(parsed[1]))) {
+                                intersection.add(parsed[0]);
+                            }
+                        }
+                    } else {
                         if (approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection((virtualId + 1) % map.size(), Integer.parseInt(parsed[1]))) {
+                            cars.add(parsed);
+                            time.add(date.getTime());
                             intersection.add(parsed[0]);
                         }
-                    } else if (approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection((virtualId + 1) % map.size(), Integer.parseInt(parsed[1]))) {
-                        cars.add(parsed);
-                        time.add(date.getTime());
-                        intersection.add(parsed[0]);
                     }
                 }
             }
@@ -259,15 +290,17 @@ public class CPSCar {
 
     // make the car aware of its own position
     private void updatePosition() throws IOException {
-        if (map != null) {
-            if (virtualId == -1 || (virtualId != map.indexOf(pieceId))) {
-                if (!map.duplicate(pieceId)) {
-                    section = map.lookup(pieceId, false);
-                    virtualId = map.getBySection(section);
-                    if (!this.reverse) {
-                        prevId = (virtualId + map.size() - 1) % map.size();
-                    } else {
-                        prevId = (virtualId + 1) % map.size();
+        if (tempMap != null) {
+            if (map != null) {
+                if (virtualId == -1 || (virtualId != map.indexOf(pieceId))) {
+                    if (!map.duplicate(pieceId)) {
+                        section = map.lookup(pieceId, false);
+                        virtualId = map.getBySection(section);
+                        if (!this.reverse) {
+                            prevId = (virtualId + map.size() - 1) % map.size();
+                        } else {
+                            prevId = (virtualId + 1) % map.size();
+                        }
                     }
                 }
             }
@@ -290,25 +323,20 @@ public class CPSCar {
                         System.out.println(v.getAdvertisement().getModel().name() + ": Scan Completed... ");
                         scan.stopScanning();
                         System.out.println(v.getAdvertisement().getModel().name() + ": Stopped Scanning... ");
-                        System.out.println(pieceIDs);
-                        Roadmap tempMap = scan.getRoadmap();
+//                        System.out.println(pieceIDs);
+//                        System.out.println(reverses);
+                        tempMap = scan.getRoadmap();
+                        if (reverse) {
+                            tempMap.reverse();
+                        }
                         tempMap.normalize();
-                        System.out.println(tempMap.toList());
-                        this.map = new RoadmapManager(tempMap, this.reverse, pieceIDs, reverses);
-                        map.generateTrack();
-                        System.out.println(v.getAdvertisement().getModel().name() + ": Track Completed... ");  
-                        
-                        /*
-                        * Notify GUI scanning track is completed
-                        */
-                        //ControlGUI.setScan_complete(true);
-                        this.scanFinished = true;
-                        
+                        scanDone = true;
                         try {
                             Thread.sleep(10);
                         } catch (InterruptedException ex) {
                             Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
                         }
+//                        v.sendMessage(new SetSpeedMessage(0, 12500));
 //                        v.sendMessage(new ChangeLaneMessage(68, 100, 100));
                     }
                 }
@@ -337,7 +365,7 @@ public class CPSCar {
             emergStop.updateInfo();
             over.updateInfo();
 
-            String position = v.getAddress() + " " + virtualId + " " + locationId + " " + prevId + " " + prevLocationId + " " + reverse + " " + speed + " " + offset;
+            String position = v.getAddress() + " " + virtualId + " " + locationId + " " + prevId + " " + prevLocationId + " " + reverse + " " + speed + " " + offset + " " + atIntersection() + " " + map.getID();
             publisher.multicast(position);
         }
     }
@@ -361,10 +389,12 @@ public class CPSCar {
                         }
                         v.sendMessage(new SetSpeedMessage(0, 12500));
                         intersection.add(v.getAddress());
+                        System.out.println(intersection);
                     }
                     return true;
                 } else if (prevIsIntersection) {
                     approachingIntersection = true;
+                    System.out.println("Approaching intersection... ");
                     try {
                         Thread.sleep(5);
                     } catch (InterruptedException ex) {
@@ -383,6 +413,7 @@ public class CPSCar {
                         }
                         v.sendMessage(new SetSpeedMessage(0, 12500));
                         intersection.add(v.getAddress());
+                        System.out.println(intersection);
                     }
                     return true;
                 } else if (nextIsIntersection) {
@@ -445,7 +476,7 @@ public class CPSCar {
 
         protected MulticastSocket socket = null;
         protected byte[] buf = new byte[256];
-        private boolean stopped;
+        private boolean stopped = false;
         String id;
 
         public MulticastReceiver(String id) {
@@ -475,6 +506,7 @@ public class CPSCar {
                         emergStop.emergStop(received);
                     }
                     if (atIntersection()) {
+                        System.out.println("At intersection... ");
                         fwi.run();
                     }
                     if ("end".equals(received)) {
@@ -517,7 +549,6 @@ public class CPSCar {
         v.disconnect();
         receiver.stopMC();
         t.join();
-      
     }
 
 //    

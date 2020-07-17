@@ -23,13 +23,14 @@ public class FourWayIntersection extends Behavior {
         Queue<String> queue = car.getIntersectionList();
         String name = car.getAddress();
         int id = car.getVirtualId();
+        System.out.println(queue.element() + ", " + name);
         if (queue.element() == name) {
             try {
                 Thread.sleep(3000);
             } catch (InterruptedException ex) {
                 Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
             }
-            car.sendMessage(new SetSpeedMessage(400, 100));
+            car.sendMessage(new SetSpeedMessage(300, 100));
             if (car.getVirtualId() != id) {
                 car.getIntersectionList().clear();
             }

@@ -7,6 +7,7 @@ import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.Vehicle;
 import de.adesso.anki.messages.SdkModeMessage;
 import de.adesso.anki.messages.SetSpeedMessage;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,21 +36,44 @@ public class CPSTestProgram {
 
         } else {
             System.out.println(vehicles.toString());
-            CPSCar cps1 = new CPSCar(vehicles.get(0));
-            CPSCar cps2 = new CPSCar(vehicles.get(1));
-            cars.add(cps1);
-            cars.add(cps2);
-            boolean quit = false;
-            Scanner kb = new Scanner(System.in);
-            while (!quit) {
-                if (kb.nextLine().equalsIgnoreCase("q")) {
-                    quit = true;
+            for (Vehicle v : vehicles) {
+                CPSCar c = new CPSCar(v);
+                cars.add(c);
+            }
+
+            // Roadmap Manager(s)
+            List<RoadmapManager> managers = new ArrayList<>();
+
+//            Scanner kb = new Scanner(System.in);
+            while (true) {
+//                if (kb.nextLine().equalsIgnoreCase("q")) {
+//                    break;
+//                }                
+                // If scan is done, get notified
+                for (CPSCar c : cars) {
+                    if (c.scanDone()) {
+                        System.out.println(c.getAddress() + ": Scan Done... ");
+                        for (RoadmapManager rm : managers) {
+                            if (c.getMap().equals(rm.getMap())) {
+                                System.out.println("Same manager...");
+                                c.setRoadmapMannager(rm);
+                            }
+                        }
+                        if (c.getManager() == null) {
+                            System.out.println("New manager...");
+                            RoadmapManager rm = new RoadmapManager(c.getMap(), c.getReverse(), c.getPieceIDs(), c.getReverses());
+                            managers.add(rm);
+                            c.setRoadmapMannager(rm);
+                            rm.setID(managers.indexOf(rm));
+                        }
+                    }
                 }
+                Thread.sleep(100);
             }
-            for (CPSCar c : cars) {
-                c.disconnect();
-            }
+
+        }
+        for (CPSCar c : cars) {
+            c.disconnect();
         }
     }
-
 }

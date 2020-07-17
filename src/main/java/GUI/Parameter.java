@@ -5,6 +5,9 @@
  */
 package GUI;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  *
  * @author HN
@@ -93,4 +96,31 @@ public class Parameter {
     public static final String MESSAGE_SUCCESS = "200 Success";
     public static final String MESSAGE_NO_SELECTED_VEHICLE = "No selected vehicle";
     public static final String MESSAGE_NO_ADJUST_CONNECTED_BEHAVIOR = "This behavior cannot be manually adjusted";
+
+    /**
+     * ID of road piece
+     */
+    public final static List<Integer> START_PIECE = Arrays.asList(33);
+    public final static List<Integer> FINISH_PIECE = Arrays.asList(34);
+    public final static List<Integer> INTERSECTION_PIECE = Arrays.asList(10);
+    public final static List<Integer> JUMP_PIECE = Arrays.asList(58);
+    public final static List<Integer> POWERZONE_PIECE = Arrays.asList(57);
+    public final static List<Integer> LANDING_PIECE = Arrays.asList(63);
+    
+    public final static List<Integer> STRAIGHT_PIECE = Arrays.asList(36, 39, 40, 48, 51);
+    public final static List<Integer> CURVED_PIECE = Arrays.asList(17, 18, 20, 23, 24, 27);
+    
+    /**
+     * Character of road piece
+     */
+    public final static String START_FINISH = "SF";
+    public final static String STRAIGHT_HORIZONTAL = "SH";
+    public final static String STRAIGHT_VERTICAL = "SV";
+    public final static String INTERSECTION = "IN";
+    
+    public final static String CURVED_NORTH_EAST = "NE";
+    public final static String CURVED_NORTH_WEST = "NW";
+    public final static String CURVED_SOUTH_EAST = "SE";
+    public final static String CURVED_SOUTH_WEST = "SW";  
+    
 }

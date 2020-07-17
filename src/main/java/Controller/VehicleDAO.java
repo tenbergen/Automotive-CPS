@@ -214,4 +214,8 @@ public class VehicleDAO {
             e.printStackTrace();
         }
     }
+    
+    public boolean isScanCompeleted(){
+        return this.getCpsCar().isScanFinished();
+    }
 }

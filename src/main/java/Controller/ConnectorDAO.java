@@ -8,6 +8,8 @@ package Controller;
 import GUI.Parameter;
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.Vehicle;
+import de.adesso.anki.messages.SdkModeMessage;
+import de.adesso.anki.messages.SetSpeedMessage;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,11 +27,9 @@ public class ConnectorDAO {
     private final AnkiConnector ankiConnector;
     private List<VehicleDAO> vehicles;
     private VehicleDAO selectedVehicle;
-    private HashMap<String, VehicleDAO> existedVehicles;
     
     public ConnectorDAO(String ip, int port) throws IOException{
         this.ankiConnector = new AnkiConnector(ip,port);
-        this.existedVehicles = new HashMap<>();
         this.vehicles = new ArrayList<>();
     }
     
@@ -37,10 +37,6 @@ public class ConnectorDAO {
         for (VehicleDAO v: vehicles){
             v.disconnect();
         }
-        
-        //vehicles.clear();
-        //selectedVehicle.disconnect();
-        existedVehicles.clear();
         ankiConnector.close();
     }
     
@@ -74,28 +70,16 @@ public class ConnectorDAO {
             System.out.println("      Address: " + v.getAddress());
             System.out.println("      Color: " + v.getColor());
             System.out.println("      charging? " + v.getAdvertisement().isCharging());
-                
+                       
             VehicleDAO vehicle = new VehicleDAO();
             vehicle.setCpsCar(new CPSCar(v));
             vehicle.setImg("GUI/img/Vehicle/"+v.getAdvertisement().getModel()+".png");
+            
             this.vehicles.add(vehicle);
-            this.existedVehicles.put(""+v.getAdvertisement().getIdentifier(),vehicle);
         }
         catch(Exception e){
             e.printStackTrace();
         }      
-    }
-    public void removeVehicle(String key){
-        try{
-            if(this.existedVehicles.containsKey(key)){
-                VehicleDAO vehicle = this.existedVehicles.get(key);
-                vehicles.remove(vehicle);
-                this.existedVehicles.remove(key);               
-            }
-        }
-        catch(Exception e){
-            e.printStackTrace();
-        }
     }
     
     public void updateVehicles(){     
@@ -104,15 +88,26 @@ public class ConnectorDAO {
             for (Vehicle v : lst) {
                 String key = ""+v.getAdvertisement().getIdentifier();
                 System.out.print("Get car: "+v.getAdvertisement().getModel());
-                if(!this.existedVehicles.containsKey(key)){
-                    addVehicle(v);
-                }                  
+
+                addVehicle(v);  
+                
             }
+            runVehicles();
         }     
         catch(Exception e){
             e.printStackTrace();
         }
         
+    }
+    
+    public void runVehicles(){
+        if (vehicles.size()==1)
+            return;
+        for (VehicleDAO v: vehicles){
+            v.getCpsCar().getVehicle().connect();
+            //v.getCpsCar().getVehicle().sendMessage(new SdkModeMessage());
+            v.getCpsCar().getVehicle().sendMessage(new SetSpeedMessage(500, 100));
+        }
     }
     
     public List<String> getLightBehavior(){

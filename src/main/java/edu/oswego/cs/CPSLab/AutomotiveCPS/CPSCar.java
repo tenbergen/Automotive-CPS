@@ -68,7 +68,7 @@ public class CPSCar {
 
     private RoadmapScanner scan;
     private boolean scanStarted;
-    private boolean scanFinished;
+    private boolean scanFinished=false;
     private ArrayList<Integer> pieceIDs;
     private ArrayList<Boolean> reverses;
     private Follow follow;
@@ -106,8 +106,8 @@ public class CPSCar {
         approachingIntersection = false;
         t = new Thread(new PositionUpdater());
         t.start();
-        Thread receiver = new Thread(new MulticastReceiver(v.getAdvertisement().getModel().name()));
-        receiver.start();
+        //Thread receiver = new Thread(new MulticastReceiver(v.getAdvertisement().getModel().name()));
+        //receiver.start();
         publisher = new MulticastPublisher();
         follow = new Follow(this);
         emergStop = new EmergencyStop(this);
@@ -127,6 +127,10 @@ public class CPSCar {
 //        } catch (Exception e){
 //            System.out.println("meh..." + e.getMessage());
 //        }
+    }
+
+    public boolean isScanFinished() {
+        return scanFinished;
     }
 
     public RoadmapScanner getScan() {
@@ -297,7 +301,8 @@ public class CPSCar {
                         /*
                         * Notify GUI scanning track is completed
                         */
-                        ControlGUI.setScan_complete(true);
+                        //ControlGUI.setScan_complete(true);
+                        this.scanFinished = true;
                         
                         try {
                             Thread.sleep(10);

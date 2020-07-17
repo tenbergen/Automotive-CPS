@@ -42,7 +42,7 @@ public class AnkiTestProgram {
     public static void main(String[] args) throws IOException, InterruptedException {
 
         System.out.println("Launching connector...");
-        AnkiConnector anki = new AnkiConnector("192.168.1.100", 5000);
+        AnkiConnector anki = new AnkiConnector("192.168.1.101", 5000);
         System.out.print("...looking for cars...");
         List<Vehicle> vehicles = anki.findVehicles();
 

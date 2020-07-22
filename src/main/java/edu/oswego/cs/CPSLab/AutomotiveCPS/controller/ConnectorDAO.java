@@ -24,6 +24,9 @@ public class ConnectorDAO {
     private List<VehicleDAO> vehicles;
     private VehicleDAO selectedVehicle;
     
+    //Test list of vehicles
+    private List<CPSCar> cpsCars = new ArrayList<>();
+    
     public ConnectorDAO(String ip, int port) throws IOException{
         this.ankiConnector = new AnkiConnector(ip,port);
         this.vehicles = new ArrayList<>();
@@ -84,7 +87,8 @@ public class ConnectorDAO {
             for (Vehicle v : lst) {
                 String key = ""+v.getAdvertisement().getIdentifier();
                 System.out.print("Get car: "+v.getAdvertisement().getModel());
-                addVehicle(v);                
+                addVehicle(v);      
+                //cpsCars.add(e)
             }
             runVehicles();
         }     

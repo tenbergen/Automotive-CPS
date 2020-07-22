@@ -786,16 +786,6 @@ public class ControlGUI extends Application {
     
     public class ScanTrack extends Thread{
         
-        /*private VehicleDAO vehicleDAO;
-
-        public VehicleDAO getVehicleDAO() {
-            return vehicleDAO;
-        }
-
-        public void setVehicleDAO(VehicleDAO vehicleDAO) {
-            this.vehicleDAO = vehicleDAO;
-        }*/
-
         @Override
         public void run(){
             boolean finished=false;
@@ -809,6 +799,7 @@ public class ControlGUI extends Application {
                     if(check[i])
                         continue;
                     CPSCar c = connectorDAO.getVehicles().get(i).getCpsCar();
+                    System.out.println(c.getAddress() + " Scanning... "+i);
                     if (c.scanDone()) {
                         finished = true;
                         check[i] = true;
@@ -829,17 +820,6 @@ public class ControlGUI extends Application {
                     }
                     else
                         finished = false;
-                    
-                    /*System.out.println("GUI scanning: "+i);
-                    VehicleDAO vehicleDAO = connectorDAO.getVehicles().get(i);
-                    if(vehicleDAO.getCpsCar().getManager()!=null){
-                        setTrack(vehicleDAO.getCpsCar().getManager().getTrack());
-                        System.out.println("GUI scan complete: "+i);
-                        finished = true;
-                        check[i] = true;
-                    }
-                    else
-                        finished = false;*/
                 }
                 try {
                     Thread.sleep(500);
@@ -851,24 +831,6 @@ public class ControlGUI extends Application {
             //All vehicles are completed
             System.out.println("GUI - SCAN FULLY COMPLETED");
             System.out.println("GUI - RoadmapManager Size "+roadmapManagers.size());
-            
-            
-            /*if (vehicleDAO==null){
-                System.out.println("No vehicle to scan");
-                return;
-            }         
-            System.out.println("GUI - Start scanning track");
-            System.out.println("GUI - Scan track of "+vehicleDAO.getCpsCar().getVehicle());
-            while(!this.vehicleDAO.isScanCompeleted()){
-                System.out.println("GUI scan_complete: "+this.vehicleDAO.isScanCompeleted());
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ControlGUI.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            System.out.println("GUI - "+vehicleDAO.getCpsCar().getVehicle()+" Track scanning has been finished");
-            setTrack(vehicleDAO);*/
         }
         
     }

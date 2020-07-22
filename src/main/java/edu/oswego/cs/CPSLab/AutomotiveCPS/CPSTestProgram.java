@@ -24,6 +24,7 @@ public class CPSTestProgram {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, InterruptedException {
+        System.setProperty("java.net.preferIPv4Stack" , "true");
         System.out.println("Launching connector...");
         AnkiConnector anki = new AnkiConnector("192.168.1.101", 5000);
         System.out.println("...looking for cars...");
@@ -36,11 +37,15 @@ public class CPSTestProgram {
 
         } else {
             System.out.println(vehicles.toString());
+            
             for (Vehicle v : vehicles) {
                 CPSCar c = new CPSCar(v);
-                cars.add(c);
+                cars.add(c);             
             }
-
+            System.out.println(cars);
+            
+            while(true){}
+            /*
             // Roadmap Manager(s)
             List<RoadmapManager> managers = new ArrayList<>();
 
@@ -74,6 +79,7 @@ public class CPSTestProgram {
         }
         for (CPSCar c : cars) {
             c.disconnect();
+        }*/
         }
     }
 }

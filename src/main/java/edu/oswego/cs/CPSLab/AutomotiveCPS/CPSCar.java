@@ -1,15 +1,11 @@
 package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
-import GUI.ControlGUI;
+import de.adesso.anki.roadmap.roadpieces.StartRoadpiece;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
-import de.adesso.anki.AdvertisementData;
-import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.MessageListener;
 import de.adesso.anki.RoadmapScanner;
 import de.adesso.anki.Vehicle;
-import de.adesso.anki.messages.ChangeLaneMessage;
 import de.adesso.anki.messages.LocalizationPositionUpdateMessage;
-import de.adesso.anki.messages.LocalizationTransitionUpdateMessage;
 import de.adesso.anki.messages.Message;
 import de.adesso.anki.messages.SdkModeMessage;
 import de.adesso.anki.messages.SetOffsetFromRoadCenterMessage;
@@ -17,7 +13,6 @@ import de.adesso.anki.messages.SetSpeedMessage;
 import de.adesso.anki.roadmap.Section;
 import de.adesso.anki.roadmap.Roadmap;
 import de.adesso.anki.roadmap.roadpieces.IntersectionRoadpiece;
-import de.adesso.anki.roadmap.roadpieces.Roadpiece;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.EmergencyStop;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.Follow;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.FourWayIntersection;
@@ -321,7 +316,7 @@ public class CPSCar {
                 }
             }
         } else {
-            if (pieceId == 33 && !scanStarted) {
+            if (pieceId == StartRoadpiece.ROADPIECE_IDS[0] && !scanStarted) {
                 reverse = lpuh.reverse;
                 scan.startScanning();
                 System.out.println(v.getAdvertisement().getModel().name() + ": Started Scanning... ");

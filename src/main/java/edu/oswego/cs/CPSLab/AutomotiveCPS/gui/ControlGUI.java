@@ -561,7 +561,7 @@ public class ControlGUI extends Application {
         updateRealTimeData = new UpdateRealTimeData();
         updateRealTimeData.start();
         
-        startScanTrack();
+        //startScanTrack();
                
         Scene scene = new Scene(grid, Parameter.WIDTH_SCENE_CONTROL, Parameter.HEIGHT_SCENE_CONTROL);
         scene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());

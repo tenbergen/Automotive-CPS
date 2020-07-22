@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package GUI;
+package edu.oswego.cs.CPSLab.AutomotiveCPS.gui;
 
 import java.util.Arrays;
 import java.util.List;

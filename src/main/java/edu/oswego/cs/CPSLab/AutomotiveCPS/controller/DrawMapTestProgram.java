@@ -3,10 +3,10 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Controller;
+package edu.oswego.cs.CPSLab.AutomotiveCPS.controller;
 
 import Utilities.ArrayMap;
-import GUI.Parameter;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.gui.Parameter;
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.Vehicle;
 import de.adesso.anki.messages.SdkModeMessage;

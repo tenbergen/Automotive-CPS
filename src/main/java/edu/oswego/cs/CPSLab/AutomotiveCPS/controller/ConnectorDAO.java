@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Controller;
+package edu.oswego.cs.CPSLab.AutomotiveCPS.controller;
 
-import GUI.Parameter;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.gui.Parameter;
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.Vehicle;
 import de.adesso.anki.messages.SdkModeMessage;
@@ -13,11 +13,7 @@ import de.adesso.anki.messages.SetSpeedMessage;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import javafx.collections.FXCollections;
-import javafx.collections.ObservableList;
 
 /**
  *
@@ -73,7 +69,7 @@ public class ConnectorDAO {
                        
             VehicleDAO vehicle = new VehicleDAO();
             vehicle.setCpsCar(new CPSCar(v));
-            vehicle.setImg("GUI/img/Vehicle/"+v.getAdvertisement().getModel()+".png");
+            vehicle.setImg("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Vehicle/" +v.getAdvertisement().getModel()+".png");
             
             this.vehicles.add(vehicle);
         }

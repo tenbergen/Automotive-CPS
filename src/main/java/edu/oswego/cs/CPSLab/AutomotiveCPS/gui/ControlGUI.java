@@ -3,11 +3,11 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package GUI;
+package edu.oswego.cs.CPSLab.AutomotiveCPS.gui;
 
-import Controller.ConnectorDAO;
-import Controller.MapDAO;
-import Controller.VehicleDAO;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.ConnectorDAO;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.MapDAO;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.VehicleDAO;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
@@ -203,7 +203,7 @@ public class ControlGUI extends Application {
         vbox_control_parameter_offset.setAlignment(Pos.CENTER);
         
         //Offset icon
-        ImageView iv_control_parameter_offset= new ImageView(new Image("GUI/img/Icon/offset.png"));
+        ImageView iv_control_parameter_offset= new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/offset.png"));
         iv_control_parameter_offset.setFitHeight(Parameter.SIZE_ICON_MEDIUM);
         iv_control_parameter_offset.setPreserveRatio(true);
         iv_control_parameter_offset.setSmooth(true);
@@ -222,7 +222,7 @@ public class ControlGUI extends Application {
         vbox_control_parameter_speed.setAlignment(Pos.CENTER);
         
         //Speed icon
-        ImageView iv_control_parameter_speed= new ImageView(new Image("GUI/img/Icon/speed.png"));
+        ImageView iv_control_parameter_speed= new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/speed.png"));
         iv_control_parameter_speed.setFitHeight(Parameter.SIZE_ICON_MEDIUM);
         iv_control_parameter_speed.setPreserveRatio(true);
         iv_control_parameter_speed.setSmooth(true);
@@ -241,7 +241,7 @@ public class ControlGUI extends Application {
         vbox_control_parameter_battery.setAlignment(Pos.CENTER);
         
         //Battery icon
-        ImageView iv_control_parameter_battery= new ImageView(new Image("GUI/img/Icon/battery.png"));
+        ImageView iv_control_parameter_battery= new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/battery.png"));
         iv_control_parameter_battery.setFitHeight(Parameter.SIZE_ICON_MEDIUM);
         iv_control_parameter_battery.setPreserveRatio(true);
         iv_control_parameter_battery.setSmooth(true);
@@ -262,7 +262,7 @@ public class ControlGUI extends Application {
         vbox_control_vehicle.setAlignment(Pos.CENTER);
         
         //Vehicle icon
-        ImageView iv_control_vehicle= new ImageView(new Image("GUI/img/Icon/vehicle_control.png"));
+        ImageView iv_control_vehicle= new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/vehicle_control.png"));
         iv_control_vehicle.setFitWidth(Parameter.SIZE_ICON_BIG);
         iv_control_vehicle.setPreserveRatio(true);
         iv_control_vehicle.setSmooth(true);
@@ -287,7 +287,7 @@ public class ControlGUI extends Application {
         vbox_control_adjust_speed.setSpacing(Parameter.COMPONENT_VGAP);
         
         //Adjust speed arrow - UP        
-        ImageView iv_control_adjust_speed_up = new ImageView(new Image("GUI/img/Icon/arrow-up.png"));
+        ImageView iv_control_adjust_speed_up = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/arrow-up.png"));
         iv_control_adjust_speed_up.setFitHeight(Parameter.SIZE_ICON_SMALL);      
         iv_control_adjust_speed_up.setPreserveRatio(true);
         iv_control_adjust_speed_up.setSmooth(true);
@@ -310,7 +310,7 @@ public class ControlGUI extends Application {
         vbox_control_adjust_speed.getChildren().add(txt_control_adjust_speed);
         
         //Adjust speed arrow - DOWN       
-        ImageView iv_control_adjust_speed_down = new ImageView(new Image("GUI/img/Icon/arrow-down.png"));
+        ImageView iv_control_adjust_speed_down = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/arrow-down.png"));
         iv_control_adjust_speed_down.setFitHeight(Parameter.SIZE_ICON_SMALL);      
         iv_control_adjust_speed_down.setPreserveRatio(true);
         iv_control_adjust_speed_down.setSmooth(true);
@@ -330,7 +330,7 @@ public class ControlGUI extends Application {
         hbox_control_adjust.getChildren().add(vbox_control_adjust_speed);
         
         //Steering wheel
-        ImageView iv_control_adjust_steering_wheel= new ImageView(new Image("GUI/img/Icon/steering-wheel.png"));
+        ImageView iv_control_adjust_steering_wheel= new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/steering-wheel.png"));
         iv_control_adjust_steering_wheel.setFitHeight(Parameter.SIZE_ICON_MEDIUM);
         iv_control_adjust_steering_wheel.setPreserveRatio(true);
         iv_control_adjust_steering_wheel.setSmooth(true);

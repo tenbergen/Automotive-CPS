@@ -3,9 +3,9 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Controller;
+package edu.oswego.cs.CPSLab.AutomotiveCPS.controller;
 
-import GUI.Parameter;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.gui.Parameter;
 import Utilities.ArrayMap;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
 import java.util.List;

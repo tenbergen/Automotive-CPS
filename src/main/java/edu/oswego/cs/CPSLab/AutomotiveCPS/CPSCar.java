@@ -1,5 +1,6 @@
 package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
+import de.adesso.anki.roadmap.roadpieces.StartRoadpiece;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import de.adesso.anki.MessageListener;
 import de.adesso.anki.RoadmapScanner;
@@ -299,7 +300,7 @@ public class CPSCar {
                 }
             }
         } else {
-            if (pieceId == 33 && !scanStarted) {
+            if (pieceId == StartRoadpiece.ROADPIECE_IDS[0] && !scanStarted) {
                 reverse = lpuh.reverse;
                 scan.startScanning();
                 System.out.println(v.getAdvertisement().getModel().name() + ": Started Scanning... ");

@@ -119,11 +119,11 @@ public class ConnectGUI extends Application {
                     ConnectorDAO connector = new ConnectorDAO(ip,port); 
                     
                     //Call control stage
-                    Stage controlStage = new Stage();
-                    ControlGUI control = new ControlGUI();
-                    control.setConnectorDAO(connector);
-                    control.start(controlStage);
-                    controlStage.show();
+                    Stage scanStage = new Stage();
+                    ScanVehiclesGUI scanVehiclesGUI = new ScanVehiclesGUI();
+                    scanVehiclesGUI.setConnectorDAO(connector);
+                    scanVehiclesGUI.start(scanStage);
+                    scanStage.show();
                     
                     //Clean before close
                     connector.getAnkiConnector().close();
@@ -131,6 +131,8 @@ public class ConnectGUI extends Application {
                     
                 } catch (IOException ex) {
                     announcement.setText("Connect fail, please try again");
+                    Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (Exception ex) {
                     Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }

@@ -47,6 +47,9 @@ public class Parameter {
     public static final int WIDTH_SCENE_CONNECT = 600;
     public static final int HEIGHT_SCENE_CONNECT = 400;
     
+    public static final int WIDTH_SCENE_SCAN_VEHICLES = 500;
+    public static final int HEIGHT_SCENE_SCAN_VEHICLES = 400;
+    
     public static final int WIDTH_SCENE_CONTROL = 1000;
     public static final int HEIGHT_SCENE_CONTROL = 800;
     
@@ -60,6 +63,12 @@ public class Parameter {
     public static final int SIZE_ICON_MEDIUM = 50;
     public static final int SIZE_ICON_SMALL = 20;
     public static final int SIZE_ICON_TINY = 10;
+    
+    /**
+     * Size of components of Scan Vehicle
+     */ 
+    public static final int HEIGHT_BUTTON_SCAN_VEHICLE = 100;
+    
     
     /**
      * Size of components of Control GUI

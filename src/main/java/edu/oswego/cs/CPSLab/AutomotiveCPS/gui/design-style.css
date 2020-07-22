@@ -152,3 +152,7 @@ and open the template in the editor.
     -fx-background-color: #ff9600;
     -fx-effect: innershadow( three-pass-box , rgb(204, 221, 255) , 10,0,0,1);
 }
+
+#scan-vehicles-grid{
+    -fx-background-color: black;
+}

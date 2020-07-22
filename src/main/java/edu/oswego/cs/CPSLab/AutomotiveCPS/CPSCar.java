@@ -91,6 +91,11 @@ public class CPSCar {
         this.v = v;
         this.v.connect();
         this.v.sendMessage(new SdkModeMessage());
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
         virtualId = -1;
                 
         lpuh = new LocalizationPositionUpdateHandler();
@@ -133,6 +138,11 @@ public class CPSCar {
 
         //this.v.sendMessage(new SdkModeMessage());
         this.v.sendMessage(new SetSpeedMessage((int) (300 + Math.random() * 300), 300));
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
         
         System.out.println(this);
 

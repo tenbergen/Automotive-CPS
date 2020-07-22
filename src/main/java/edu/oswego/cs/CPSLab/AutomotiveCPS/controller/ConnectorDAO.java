@@ -14,20 +14,26 @@ import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author HN
  */
 public class ConnectorDAO {
-    private final AnkiConnector ankiConnector;
+    private AnkiConnector ankiConnector;
+    private List<Vehicle> scanningVehicles;
     private List<VehicleDAO> vehicles;
     private VehicleDAO selectedVehicle;
-    
+    private String ip;
+    private int port;
     
     public ConnectorDAO(String ip, int port) throws IOException{
         this.ankiConnector = new AnkiConnector(ip,port);
         this.vehicles = new ArrayList<>();
+        this.ip = ip;
+        this.port = port;
     }
     
     public void disconnect(){
@@ -80,9 +86,8 @@ public class ConnectorDAO {
     }
     
     public void updateVehicles(){     
-        try{
-            List<Vehicle> lst = ankiConnector.findVehicles();           
-            for (Vehicle v : lst) {
+        try{        
+            for (Vehicle v : scanningVehicles) {
                 String key = ""+v.getAdvertisement().getIdentifier();
                 System.out.print("Get car: "+v.getAdvertisement().getModel());
                 addVehicle(v);   
@@ -90,8 +95,21 @@ public class ConnectorDAO {
         }     
         catch(Exception e){
             e.printStackTrace();
+        }       
+    }
+    
+    public List<Vehicle> scanVehicles(){
+        try {
+            this.ankiConnector = new AnkiConnector(this.ip,this.port);
+            this.scanningVehicles = ankiConnector.findVehicles();
+            for (Vehicle v : scanningVehicles) {
+                System.out.println("Get car: "+v.getAdvertisement().getModel());
+            }
+            
+        } catch (IOException ex) {
+            Logger.getLogger(ConnectorDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+        return this.scanningVehicles;
     }
     
     

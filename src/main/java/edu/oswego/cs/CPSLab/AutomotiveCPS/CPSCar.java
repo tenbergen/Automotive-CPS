@@ -94,13 +94,27 @@ public class CPSCar {
 //    }
     public CPSCar(Vehicle v) {
         this.v = v;
-        v.connect();
+        this.v.connect();
+        this.v.sendMessage(new SdkModeMessage());
         virtualId = -1;
+                
         lpuh = new LocalizationPositionUpdateHandler();
-        v.addMessageListener(LocalizationPositionUpdateMessage.class, lpuh);
+        this.v.addMessageListener(LocalizationPositionUpdateMessage.class, lpuh);
+        
         v.sendMessage(new LocalizationPositionUpdateMessage());
-        v.sendMessage(new SetOffsetFromRoadCenterMessage(-68));
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
+        v.sendMessage(new SetOffsetFromRoadCenterMessage(-68));
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         cars = new ArrayList<String[]>();
         time = new ArrayList<Long>();
         date = new Date();
@@ -108,7 +122,7 @@ public class CPSCar {
         approachingIntersection = false;
         t = new Thread(new PositionUpdater());
         t.start();
-        receiver = new MulticastReceiver(v.getAdvertisement().getModel().name());
+        receiver = new MulticastReceiver(this.v.getAdvertisement().getModel().name());
         receiver.start();
         publisher = new MulticastPublisher();
         follow = new Follow(this);
@@ -116,14 +130,16 @@ public class CPSCar {
         over = new Overtake(this);
         fwi = new FourWayIntersection(this);
 
-        scan = new RoadmapScanner(v);
+        scan = new RoadmapScanner(this.v);
         scanStarted = false;
         scanDone = false;
         pieceIDs = new ArrayList<Integer>();
         reverses = new ArrayList<Boolean>();
 
-        v.sendMessage(new SdkModeMessage());
-        v.sendMessage(new SetSpeedMessage((int) (300 + Math.random() * 300), 300));
+        //this.v.sendMessage(new SdkModeMessage());
+        this.v.sendMessage(new SetSpeedMessage((int) (300 + Math.random() * 300), 300));
+        
+        System.out.println(this);
 
 //        try {
 //            while (true) publisher.multicast("Hello! The Multicast was sent by " + id);
@@ -491,7 +507,7 @@ public class CPSCar {
         public void run() {
             try {
                 socket = new MulticastSocket(4446);
-                InetAddress group = InetAddress.getByName("230.0.0.4");
+                InetAddress group = InetAddress.getByName("230.0.0.0");
                 socket.joinGroup(group);
                 while (!stopped) {
                     DatagramPacket packet = new DatagramPacket(buf, buf.length);

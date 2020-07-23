@@ -65,12 +65,10 @@ public class ControlGUI extends Application {
     //******** Selected Car ********
     private UpdateRealTimeData updateRealTimeData;
     private Text txt_vehicle_name;
-    private Text txt_vehicle_desc;
     private ImageView iv_vehicle_thumbnail;
     private Text txt_control_parameter_offset;
     private Text txt_control_parameter_speed;
     private Text txt_control_parameter_battery;
-    private Text txt_control_road_type;
     
     //******** List of Vehicles ********
     private ListView<VehicleDAO> lv_vehicles = new ListView<>();
@@ -285,24 +283,14 @@ public class ControlGUI extends Application {
         iv_vehicle_thumbnail.setSmooth(true);
         iv_vehicle_thumbnail.setCache(true);
         vbox_vehicle.getChildren().add(iv_vehicle_thumbnail);
-        
-        /*txt_vehicle_desc = new Text();
-        txt_vehicle_desc.setId("normal-text");
-        txt_vehicle_desc.setWrappingWidth(Parameter.WIDTH_DESCRIPTION_CAR);
-        vbox_vehicle.getChildren().add(txt_vehicle_desc);*/
-        
         vbox_control_vehicle.getChildren().add(vbox_vehicle);
         vbox_control.getChildren().add(vbox_control_vehicle);
         
-        //Adjust box
-        HBox hbox_control_adjust = new HBox();
-        hbox_control_adjust.setAlignment(Pos.CENTER);
-        hbox_control_adjust.setSpacing(Parameter.ICON_HGAP);
         
-        //Adjust speed box
-        VBox vbox_control_adjust_speed = new VBox();
-        vbox_control_adjust_speed.setAlignment(Pos.CENTER);
-        vbox_control_adjust_speed.setSpacing(Parameter.COMPONENT_VGAP);
+        //*********** Adjust speed ***********
+        HBox hbox_control_adjust_speed = new HBox();
+        hbox_control_adjust_speed.setAlignment(Pos.CENTER);
+        hbox_control_adjust_speed.setSpacing(Parameter.COMPONENT_VGAP);
         
         //Adjust speed arrow - UP        
         ImageView iv_control_adjust_speed_up = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/arrow-up.png"));
@@ -320,12 +308,12 @@ public class ControlGUI extends Application {
                 adjustSpeed(true);          
             }
         });
-        vbox_control_adjust_speed.getChildren().add(btn_control_adjust_speed_up);
+        hbox_control_adjust_speed.getChildren().add(btn_control_adjust_speed_up);
         
         //Adjust speed text
         Text txt_control_adjust_speed = new Text("Speed");
         txt_control_adjust_speed.setId("label-text");   
-        vbox_control_adjust_speed.getChildren().add(txt_control_adjust_speed);
+        hbox_control_adjust_speed.getChildren().add(txt_control_adjust_speed);
         
         //Adjust speed arrow - DOWN       
         ImageView iv_control_adjust_speed_down = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/arrow-down.png"));
@@ -343,8 +331,8 @@ public class ControlGUI extends Application {
                 adjustSpeed(false);           
             }
         });
-        vbox_control_adjust_speed.getChildren().add(btn_control_adjust_speed_down);       
-        hbox_control_adjust.getChildren().add(vbox_control_adjust_speed);
+        hbox_control_adjust_speed.getChildren().add(btn_control_adjust_speed_down);       
+        vbox_control.getChildren().add(hbox_control_adjust_speed);
         
         //***************************************************
         //#################### Behavior #####################

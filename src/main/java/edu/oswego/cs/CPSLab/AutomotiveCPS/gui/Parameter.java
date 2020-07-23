@@ -54,7 +54,7 @@ public class Parameter {
     public static final int WIDTH_SCENE_CONTROL = 1000;
     public static final int HEIGHT_SCENE_CONTROL = 800;
     
-    public static final int WIDTH_SCENE_POPUP = 300;
+    public static final int WIDTH_SCENE_POPUP = 400;
     public static final int HEIGHT_SCENE_POPUP = 200;
     
     /**

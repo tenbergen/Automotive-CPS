@@ -118,13 +118,6 @@ public class ConnectGUI extends Application {
                     System.out.println(ip+"-"+port);
                     ConnectorDAO connector = new ConnectorDAO(ip,port); 
                     
-                    //Call control stage
-                    /*Stage scanStage = new Stage();
-                    ScanVehiclesGUI scanVehiclesGUI = new ScanVehiclesGUI();
-                    scanVehiclesGUI.setConnectorDAO(connector);
-                    scanVehiclesGUI.start(scanStage);
-                    scanStage.show();*/
-                    
                     Stage controlStage = new Stage();
                     ControlGUI controlGUI = new ControlGUI();
                     controlGUI.setConnectorDAO(connector);

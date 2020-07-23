@@ -119,11 +119,17 @@ public class ConnectGUI extends Application {
                     ConnectorDAO connector = new ConnectorDAO(ip,port); 
                     
                     //Call control stage
-                    Stage scanStage = new Stage();
+                    /*Stage scanStage = new Stage();
                     ScanVehiclesGUI scanVehiclesGUI = new ScanVehiclesGUI();
                     scanVehiclesGUI.setConnectorDAO(connector);
                     scanVehiclesGUI.start(scanStage);
-                    scanStage.show();
+                    scanStage.show();*/
+                    
+                    Stage controlStage = new Stage();
+                    ControlGUI controlGUI = new ControlGUI();
+                    controlGUI.setConnectorDAO(connector);
+                    controlGUI.start(controlStage);
+                    controlStage.show();
                     
                     //Clean before close
                     connector.getAnkiConnector().close();

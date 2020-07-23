@@ -25,6 +25,7 @@ public class Parameter {
      */
     public static final int GRID_VGAP = 20;
     public static final int GRID_HGAP = 20;
+    public static final int GRID_HGAP_CONTROL = 50;
     
     public static final int REGION_VGAP = 20;
     public static final int REGION_HGAP = 20;
@@ -73,9 +74,9 @@ public class Parameter {
     /**
      * Size of components of Control GUI
      */ 
-    public static final int HEIGHT_INDIVIDUAL_CAR = 250;
+    public static final int HEIGHT_INDIVIDUAL_CAR = 650;
     
-    public static final int HEIGHT_LIST_CAR = 200;
+    public static final int HEIGHT_LIST_CAR = 600;
     public static final int WIDTH_LIST_CAR = 100;
     
     public static final int HEIGHT_THUMBNAIL = 100;

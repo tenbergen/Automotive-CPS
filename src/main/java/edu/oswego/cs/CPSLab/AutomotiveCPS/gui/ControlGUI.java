@@ -54,17 +54,33 @@ public class ControlGUI extends Application {
     
     private Stage stage;
     private ConnectorDAO connectorDAO;
-    
-    
+      
+    //******** Map ********
     private MapDAO mapDAO;
     private List<MapDAO> maps = new ArrayList<>();
     List<RoadmapManager> roadmapManagers = new ArrayList<>();
-    
-    
-    private UpdateRealTimeData updateRealTimeData;
     private ScanTrack scanTrack;
     private static boolean scan_complete = false;
-
+    
+    //******** Selected Car ********
+    private UpdateRealTimeData updateRealTimeData;
+    private Text txt_vehicle_name;
+    private ImageView iv_vehicle_thumbnail;
+    private Text txt_control_parameter_offset;
+    private Text txt_control_parameter_speed;
+    private Text txt_control_parameter_battery;
+    
+    //******** List of Vehicles ********
+    private ListView<VehicleDAO> lv_vehicles = new ListView<>();
+    private ObservableList<VehicleDAO> observable_list_vehicles;
+     
+    //******** Behavior Drag & Drop ********
+    private final ObjectProperty<TreeCell<String>> dragSource = new SimpleObjectProperty<>();
+    private static final DataFormat JAVA_FORMAT = new DataFormat("application/x-java-serialized-object");
+    private TreeItem<String> draggedItem;
+    private ListView<String> lv_current_behaviors;
+    
+    
     public static boolean isScan_complete() {
         return scan_complete;
     }
@@ -73,26 +89,6 @@ public class ControlGUI extends Application {
         ControlGUI.scan_complete = scan_complete;
     }
   
-    private ListView<VehicleDAO> lv_vehicles = new ListView<>();
-    private ObservableList<VehicleDAO> observable_list_vehicles;
-    
-    //Component of information section
-    Text txt_vehicle_name;
-    Text txt_vehicle_desc;
-    ImageView iv_vehicle_thumbnail;
-    
-    //Component of control section
-    Text txt_control_parameter_offset;
-    Text txt_control_parameter_speed;
-    Text txt_control_parameter_battery;
-    Text txt_control_road_type;
-    
-    //Behavior Drag & Drop 
-    private final ObjectProperty<TreeCell<String>> dragSource = new SimpleObjectProperty<>();
-    private static final DataFormat JAVA_FORMAT = new DataFormat("application/x-java-serialized-object");
-    private TreeItem<String> draggedItem;
-    private ListView<String> lv_current_behaviors;
-    
     @Override
     public void stop(){
         System.out.println("Stage is closing");
@@ -106,43 +102,23 @@ public class ControlGUI extends Application {
         GridPane grid = new GridPane();
         grid.setId("control-grid");
         grid.setAlignment(Pos.CENTER);
-        grid.setHgap(Parameter.GRID_HGAP);
+        grid.setHgap(Parameter.GRID_HGAP_CONTROL);
         grid.setVgap(Parameter.GRID_VGAP);
         grid.setPadding(new Insets(Parameter.SIZE_PADDING,Parameter.SIZE_PADDING,Parameter.SIZE_PADDING,Parameter.SIZE_PADDING));
         //grid.setGridLinesVisible(true);
-    
+        
+        this.connectorDAO.scanVehicles();
+        this.connectorDAO.updateVehicles();
+        
         //***************************************************
-        //******************** Selection ********************
+        //**************** List of Vehicles *****************
         //***************************************************
 
-        HBox hbox_selection = new HBox();
-        hbox_selection.setMaxHeight(Parameter.HEIGHT_INDIVIDUAL_CAR);
-        hbox_selection.setSpacing(Parameter.SIZE_SPACING);
-        
-        //Title + Thumbnail + Description
-        VBox vbox_vehicle = new VBox();
-        vbox_vehicle.setAlignment(Pos.CENTER);
-        vbox_vehicle.setSpacing(Parameter.TITLE_VGAP);
-        
-        //Title
-        txt_vehicle_name = new Text("Select a vehicle");
-        txt_vehicle_name.setId("heading1-text");
-        vbox_vehicle.getChildren().add(txt_vehicle_name);
-        
-        iv_vehicle_thumbnail = new ImageView();
-        iv_vehicle_thumbnail.setFitHeight(Parameter.HEIGHT_THUMBNAIL);
-        iv_vehicle_thumbnail.setPreserveRatio(true);
-        iv_vehicle_thumbnail.setSmooth(true);
-        iv_vehicle_thumbnail.setCache(true);
-        vbox_vehicle.getChildren().add(iv_vehicle_thumbnail);
-        
-        txt_vehicle_desc = new Text();
-        txt_vehicle_desc.setId("normal-text");
-        txt_vehicle_desc.setWrappingWidth(Parameter.WIDTH_DESCRIPTION_CAR);
-        vbox_vehicle.getChildren().add(txt_vehicle_desc);
+        VBox vbox_list_vehicles = new VBox();
+        vbox_list_vehicles.setMaxHeight(Parameter.HEIGHT_INDIVIDUAL_CAR);
+        vbox_list_vehicles.setSpacing(Parameter.SIZE_SPACING);
                 
-        //List View
-        connectorDAO.updateVehicles();
+        //****************List View****************
         observable_list_vehicles = FXCollections.observableList(connectorDAO.getVehicles());
         
         lv_vehicles.setId("vehicle-listview");      
@@ -153,7 +129,6 @@ public class ControlGUI extends Application {
         
         //Handle select item
         lv_vehicles.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<VehicleDAO>() {
-
             @Override
             public void changed(ObservableValue<? extends VehicleDAO> observable, VehicleDAO oldValue, VehicleDAO newValue) {
                 // Action here
@@ -161,9 +136,40 @@ public class ControlGUI extends Application {
                 updateSelectedVehicle(newValue);
             }
         });       
-        hbox_selection.getChildren().add(lv_vehicles);
-        hbox_selection.getChildren().add(vbox_vehicle);
-        grid.add(hbox_selection,0,0);
+        vbox_list_vehicles.getChildren().add(lv_vehicles);
+        
+        //**************** Button Rescan ****************
+        Button btn_rescan = new Button("Rescan");
+        btn_rescan.setId("control-button");
+        btn_rescan.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                System.out.println("Rescan ...");
+                rescan();
+            }
+        });
+        vbox_list_vehicles.getChildren().add(btn_rescan);
+        
+        //**************** Button Disconnect ****************
+        Button btn_disconnect = new Button("Disconnect");
+        btn_disconnect.setId("control-button");
+        btn_disconnect.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                disconnect();
+                
+                //Call Connect stage
+                Stage connectStage = new Stage();
+                ConnectGUI connectGUI = new ConnectGUI();
+                connectGUI.start(connectStage);
+                connectStage.show();
+                    
+                stage.close();
+            }
+        });
+        vbox_list_vehicles.getChildren().add(btn_disconnect);
+        
+        grid.add(vbox_list_vehicles,0,0);
         
         //***************************************************
         //*********************** Map ***********************
@@ -261,30 +267,30 @@ public class ControlGUI extends Application {
         VBox vbox_control_vehicle = new VBox();
         vbox_control_vehicle.setAlignment(Pos.CENTER);
         
-        //Vehicle icon
-        ImageView iv_control_vehicle= new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/vehicle_control.png"));
-        iv_control_vehicle.setFitWidth(Parameter.SIZE_ICON_BIG);
-        iv_control_vehicle.setPreserveRatio(true);
-        iv_control_vehicle.setSmooth(true);
-        iv_control_vehicle.setCache(true);
-        vbox_control_vehicle.getChildren().add(iv_control_vehicle);
-               
-        //Road status
-        txt_control_road_type = new Text("Not Detected");
-        txt_control_road_type.setId("road-type-text");
-        vbox_control_vehicle.getChildren().add(txt_control_road_type);
+        //Title + Thumbnail + Description
+        VBox vbox_vehicle = new VBox();
+        vbox_vehicle.setAlignment(Pos.CENTER);
+        vbox_vehicle.setSpacing(Parameter.TITLE_VGAP);
         
+        //Title
+        txt_vehicle_name = new Text("Select a vehicle");
+        txt_vehicle_name.setId("heading1-text");
+        vbox_vehicle.getChildren().add(txt_vehicle_name);
+        
+        iv_vehicle_thumbnail = new ImageView();
+        iv_vehicle_thumbnail.setFitHeight(Parameter.HEIGHT_THUMBNAIL);
+        iv_vehicle_thumbnail.setPreserveRatio(true);
+        iv_vehicle_thumbnail.setSmooth(true);
+        iv_vehicle_thumbnail.setCache(true);
+        vbox_vehicle.getChildren().add(iv_vehicle_thumbnail);
+        vbox_control_vehicle.getChildren().add(vbox_vehicle);
         vbox_control.getChildren().add(vbox_control_vehicle);
         
-        //Adjust box
-        HBox hbox_control_adjust = new HBox();
-        hbox_control_adjust.setAlignment(Pos.CENTER);
-        hbox_control_adjust.setSpacing(Parameter.ICON_HGAP);
         
-        //Adjust speed box
-        VBox vbox_control_adjust_speed = new VBox();
-        vbox_control_adjust_speed.setAlignment(Pos.CENTER);
-        vbox_control_adjust_speed.setSpacing(Parameter.COMPONENT_VGAP);
+        //*********** Adjust speed ***********
+        HBox hbox_control_adjust_speed = new HBox();
+        hbox_control_adjust_speed.setAlignment(Pos.CENTER);
+        hbox_control_adjust_speed.setSpacing(Parameter.COMPONENT_VGAP);
         
         //Adjust speed arrow - UP        
         ImageView iv_control_adjust_speed_up = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/arrow-up.png"));
@@ -302,12 +308,12 @@ public class ControlGUI extends Application {
                 adjustSpeed(true);          
             }
         });
-        vbox_control_adjust_speed.getChildren().add(btn_control_adjust_speed_up);
+        hbox_control_adjust_speed.getChildren().add(btn_control_adjust_speed_up);
         
         //Adjust speed text
         Text txt_control_adjust_speed = new Text("Speed");
         txt_control_adjust_speed.setId("label-text");   
-        vbox_control_adjust_speed.getChildren().add(txt_control_adjust_speed);
+        hbox_control_adjust_speed.getChildren().add(txt_control_adjust_speed);
         
         //Adjust speed arrow - DOWN       
         ImageView iv_control_adjust_speed_down = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/arrow-down.png"));
@@ -325,23 +331,8 @@ public class ControlGUI extends Application {
                 adjustSpeed(false);           
             }
         });
-        vbox_control_adjust_speed.getChildren().add(btn_control_adjust_speed_down);
-        
-        hbox_control_adjust.getChildren().add(vbox_control_adjust_speed);
-        
-        //Steering wheel
-        ImageView iv_control_adjust_steering_wheel= new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/steering-wheel.png"));
-        iv_control_adjust_steering_wheel.setFitHeight(Parameter.SIZE_ICON_MEDIUM);
-        iv_control_adjust_steering_wheel.setPreserveRatio(true);
-        iv_control_adjust_steering_wheel.setSmooth(true);
-        iv_control_adjust_steering_wheel.setCache(true);
-        
-        hbox_control_adjust.getChildren().add(iv_control_adjust_steering_wheel);
-              
-        vbox_control.getChildren().add(hbox_control_adjust);
-                 
-        grid.add(vbox_control, 0,1);
-        
+        hbox_control_adjust_speed.getChildren().add(btn_control_adjust_speed_down);       
+        vbox_control.getChildren().add(hbox_control_adjust_speed);
         
         //***************************************************
         //#################### Behavior #####################
@@ -530,38 +521,23 @@ public class ControlGUI extends Application {
         
         vbox_behavior.getChildren().add(hbox_behavior_drag_drop);
         
-        grid.add(vbox_behavior, 1,1);
         
+        vbox_control.getChildren().add(vbox_behavior);
+                 
+        grid.add(vbox_control,1,0);
         
         //***************************************************
         //################ Disconnect Button ################
         //***************************************************
-        Button btn_disconnect = new Button("Disconnect");
-        btn_disconnect.setId("disconnect-button");
-        btn_disconnect.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                disconnect();
-                
-                //Call Connect stage
-                Stage connectStage = new Stage();
-                ConnectGUI connectGUI = new ConnectGUI();
-                connectGUI.start(connectStage);
-                connectStage.show();
-                    
-                stage.close();
-            }
-        });
-        grid.add(btn_disconnect, 0,2);
+        
         
         //***************************************************
         //###################### SCENE ######################
         //***************************************************
         
         updateRealTimeData = new UpdateRealTimeData();
-        updateRealTimeData.start();
-        
-        startScanTrack();
+        updateRealTimeData.start();       
+        //startScanTrack();
                
         Scene scene = new Scene(grid, Parameter.WIDTH_SCENE_CONTROL, Parameter.HEIGHT_SCENE_CONTROL);
         scene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
@@ -589,6 +565,9 @@ public class ControlGUI extends Application {
                 iv.setCache(true);
                 setGraphic(iv);
             }
+            else{
+                setGraphic(null);
+            }
  
         }
     }
@@ -599,7 +578,7 @@ public class ControlGUI extends Application {
         
         //Information
         txt_vehicle_name.setText(""+vehicle.getCpsCar().getVehicle());
-        txt_vehicle_desc.setText("Kind: "+vehicle.getCpsCar().getVehicle().getAdvertisement().getModel());
+        //txt_vehicle_desc.setText("Kind: "+vehicle.getCpsCar().getVehicle().getAdvertisement().getModel());
         iv_vehicle_thumbnail.setImage(new Image(vehicle.getImg()));
         
         //Control
@@ -617,10 +596,22 @@ public class ControlGUI extends Application {
         lv_current_behaviors.getItems().add(Parameter.BEHAVIOR_CONNECTED);
         for (String behavior: behaviors){
             lv_current_behaviors.getItems().add(behavior);
-        }
+        }       
+    }
+    
+    public void rescan(){
+        this.connectorDAO.reconnect();
+        this.connectorDAO.scanVehicles();
+        this.connectorDAO.updateVehicles();
         
-        
-        
+        //GUI
+        txt_vehicle_name.setText("Select a vehicle");
+        iv_vehicle_thumbnail.setImage(null);
+        if(lv_vehicles.getSelectionModel().getSelectedItems()!=null)
+            lv_vehicles.getSelectionModel().clearSelection();
+        lv_vehicles.getItems().removeAll();
+        observable_list_vehicles = FXCollections.observableList(connectorDAO.getVehicles());
+        lv_vehicles.setItems(observable_list_vehicles);
     }
     
     private void adjustSpeed(boolean increase){

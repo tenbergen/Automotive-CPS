@@ -14,29 +14,39 @@ import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
  * @author HN
  */
 public class ConnectorDAO {
-    private final AnkiConnector ankiConnector;
+    private AnkiConnector ankiConnector;
+    private List<Vehicle> scanningVehicles;
     private List<VehicleDAO> vehicles;
     private VehicleDAO selectedVehicle;
-    
-    //Test list of vehicles
-    private List<CPSCar> cpsCars = new ArrayList<>();
+    private String ip;
+    private int port;
     
     public ConnectorDAO(String ip, int port) throws IOException{
         this.ankiConnector = new AnkiConnector(ip,port);
         this.vehicles = new ArrayList<>();
+        this.ip = ip;
+        this.port = port;
     }
     
     public void disconnect(){
-        for (VehicleDAO v: vehicles){
-            v.disconnect();
+        try{
+            System.out.println("ConnectorDAO - disconnect ...");
+            for (VehicleDAO v: vehicles){
+                v.disconnect();
+            }
+            //ankiConnector.close();
         }
-        ankiConnector.close();
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
     
     public AnkiConnector getAnkiConnector(){
@@ -82,31 +92,46 @@ public class ConnectorDAO {
     }
     
     public void updateVehicles(){     
-        try{
-            List<Vehicle> lst = ankiConnector.findVehicles();           
-            for (Vehicle v : lst) {
+        try{      
+            System.out.println("ConnectorDAO - updateVehicles ...");
+            for (Vehicle v : this.scanningVehicles) {
                 String key = ""+v.getAdvertisement().getIdentifier();
                 System.out.print("Get car: "+v.getAdvertisement().getModel());
-                addVehicle(v);      
-                //cpsCars.add(e)
+                addVehicle(v);   
             }
-            runVehicles();
         }     
         catch(Exception e){
             e.printStackTrace();
-        }
-        
+        }       
     }
     
-    public void runVehicles(){
-        if (vehicles.size()==1)
-            return;
-        for (VehicleDAO v: vehicles){
-            v.getCpsCar().getVehicle().connect();
-            v.getCpsCar().getVehicle().sendMessage(new SdkModeMessage());
-            v.getCpsCar().getVehicle().sendMessage(new SetSpeedMessage(500, 100));
+    public void scanVehicles(){
+        try {
+            System.out.println("ConnectorDAO - scanVehicles ...");
+            this.scanningVehicles = ankiConnector.findVehicles();
+            for (Vehicle v : this.scanningVehicles) {
+                System.out.println("Get car: "+v.getAdvertisement().getModel());
+            }
+            
+        } catch (Exception ex) {
+            Logger.getLogger(ConnectorDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
+    
+    public void reconnect(){
+        try{
+            
+            this.disconnect();
+            System.out.println("ConnectorDAO - reconnect ...");
+            this.vehicles = new ArrayList<>();
+            this.selectedVehicle = null;
+            this.ankiConnector = new AnkiConnector(this.ip,this.port);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+    
     
     public List<String> getLightBehavior(){
         List<String> lights = new ArrayList();

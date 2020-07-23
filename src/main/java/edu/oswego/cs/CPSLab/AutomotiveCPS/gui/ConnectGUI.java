@@ -118,11 +118,10 @@ public class ConnectGUI extends Application {
                     System.out.println(ip+"-"+port);
                     ConnectorDAO connector = new ConnectorDAO(ip,port); 
                     
-                    //Call control stage
                     Stage controlStage = new Stage();
-                    ControlGUI control = new ControlGUI();
-                    control.setConnectorDAO(connector);
-                    control.start(controlStage);
+                    ControlGUI controlGUI = new ControlGUI();
+                    controlGUI.setConnectorDAO(connector);
+                    controlGUI.start(controlStage);
                     controlStage.show();
                     
                     //Clean before close
@@ -131,6 +130,8 @@ public class ConnectGUI extends Application {
                     
                 } catch (IOException ex) {
                     announcement.setText("Connect fail, please try again");
+                    Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (Exception ex) {
                     Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }

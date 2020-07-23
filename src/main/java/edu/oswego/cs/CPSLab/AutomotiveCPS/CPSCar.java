@@ -568,8 +568,8 @@ public class CPSCar {
 //disconnect - stop the thread
     public void disconnect() throws InterruptedException {
         v.disconnect();
-        receiver.stopMC();
-        t.join();
+        //receiver.stopMC();
+        //t.join();
     }
 
 //    

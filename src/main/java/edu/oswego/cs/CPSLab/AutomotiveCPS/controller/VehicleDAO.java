@@ -209,7 +209,9 @@ public class VehicleDAO {
             pullOver = null;
             changeLane = null;
             uTurn = null;
+            System.out.println("VehicleDAO - Disconnect behaviors");
             cpsCar.disconnect();
+            System.out.println("VehicleDAO - Disconnect cpsCar");
         }catch(Exception e){
             e.printStackTrace();
         }

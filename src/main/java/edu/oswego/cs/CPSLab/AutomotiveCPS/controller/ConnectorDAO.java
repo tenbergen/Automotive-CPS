@@ -37,10 +37,16 @@ public class ConnectorDAO {
     }
     
     public void disconnect(){
-        for (VehicleDAO v: vehicles){
-            v.disconnect();
+        try{
+            System.out.println("ConnectorDAO - disconnect ...");
+            for (VehicleDAO v: vehicles){
+                v.disconnect();
+            }
+            //ankiConnector.close();
         }
-        ankiConnector.close();
+        catch(Exception e){
+            e.printStackTrace();
+        }
     }
     
     public AnkiConnector getAnkiConnector(){
@@ -86,8 +92,9 @@ public class ConnectorDAO {
     }
     
     public void updateVehicles(){     
-        try{        
-            for (Vehicle v : scanningVehicles) {
+        try{      
+            System.out.println("ConnectorDAO - updateVehicles ...");
+            for (Vehicle v : this.scanningVehicles) {
                 String key = ""+v.getAdvertisement().getIdentifier();
                 System.out.print("Get car: "+v.getAdvertisement().getModel());
                 addVehicle(v);   
@@ -98,18 +105,31 @@ public class ConnectorDAO {
         }       
     }
     
-    public List<Vehicle> scanVehicles(){
+    public void scanVehicles(){
         try {
-            this.ankiConnector = new AnkiConnector(this.ip,this.port);
+            System.out.println("ConnectorDAO - scanVehicles ...");
             this.scanningVehicles = ankiConnector.findVehicles();
-            for (Vehicle v : scanningVehicles) {
+            for (Vehicle v : this.scanningVehicles) {
                 System.out.println("Get car: "+v.getAdvertisement().getModel());
             }
             
-        } catch (IOException ex) {
+        } catch (Exception ex) {
             Logger.getLogger(ConnectorDAO.class.getName()).log(Level.SEVERE, null, ex);
         }
-        return this.scanningVehicles;
+    }
+    
+    public void reconnect(){
+        try{
+            
+            this.disconnect();
+            System.out.println("ConnectorDAO - reconnect ...");
+            this.vehicles = new ArrayList<>();
+            this.selectedVehicle = null;
+            this.ankiConnector = new AnkiConnector(this.ip,this.port);
+        }
+        catch (Exception e){
+            e.printStackTrace();
+        }
     }
     
     

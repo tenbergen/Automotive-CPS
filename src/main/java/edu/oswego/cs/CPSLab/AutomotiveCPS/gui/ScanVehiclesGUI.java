@@ -109,7 +109,7 @@ public class ScanVehiclesGUI extends Application {
         lv_vehicles.setPrefHeight(Parameter.HEIGHT_LIST_CAR);
         lv_vehicles.setPrefWidth(Parameter.WIDTH_LIST_CAR);
         lv_vehicles.setCellFactory((ListView<Vehicle> l) -> new ScanVehiclesGUI.ColorRectCell());
-        lv_vehicles.setItems(FXCollections.observableList(connectorDAO.scanVehicles()));
+        //lv_vehicles.setItems(FXCollections.observableList(connectorDAO.scanVehicles()));
         
         //Handle select item
         lv_vehicles.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Vehicle>() {
@@ -215,7 +215,7 @@ public class ScanVehiclesGUI extends Application {
         if(lv_vehicles.getSelectionModel().getSelectedItems()!=null)
             lv_vehicles.getSelectionModel().clearSelection();
         lv_vehicles.getItems().removeAll();
-        lv_vehicles.setItems(FXCollections.observableList(connectorDAO.scanVehicles()));
+        //lv_vehicles.setItems(FXCollections.observableList(connectorDAO.scanVehicles()));
     }
     
     

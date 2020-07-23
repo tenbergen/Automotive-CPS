@@ -109,8 +109,8 @@ public class ControlGUI extends Application {
         grid.setPadding(new Insets(Parameter.SIZE_PADDING,Parameter.SIZE_PADDING,Parameter.SIZE_PADDING,Parameter.SIZE_PADDING));
         //grid.setGridLinesVisible(true);
         
-        //connectorDAO.scanVehicles();
-        connectorDAO.updateVehicles();
+        this.connectorDAO.scanVehicles();
+        this.connectorDAO.updateVehicles();
         
         //***************************************************
         //**************** List of Vehicles *****************
@@ -147,6 +147,7 @@ public class ControlGUI extends Application {
             @Override
             public void handle(ActionEvent e) {
                 System.out.println("Rescan ...");
+                rescan();
             }
         });
         vbox_list_vehicles.getChildren().add(btn_rescan);
@@ -576,6 +577,9 @@ public class ControlGUI extends Application {
                 iv.setCache(true);
                 setGraphic(iv);
             }
+            else{
+                setGraphic(null);
+            }
  
         }
     }
@@ -604,10 +608,22 @@ public class ControlGUI extends Application {
         lv_current_behaviors.getItems().add(Parameter.BEHAVIOR_CONNECTED);
         for (String behavior: behaviors){
             lv_current_behaviors.getItems().add(behavior);
-        }
+        }       
+    }
+    
+    public void rescan(){
+        this.connectorDAO.reconnect();
+        this.connectorDAO.scanVehicles();
+        this.connectorDAO.updateVehicles();
         
-        
-        
+        //GUI
+        txt_vehicle_name.setText("Select a vehicle");
+        iv_vehicle_thumbnail.setImage(null);
+        if(lv_vehicles.getSelectionModel().getSelectedItems()!=null)
+            lv_vehicles.getSelectionModel().clearSelection();
+        lv_vehicles.getItems().removeAll();
+        observable_list_vehicles = FXCollections.observableList(connectorDAO.getVehicles());
+        lv_vehicles.setItems(observable_list_vehicles);
     }
     
     private void adjustSpeed(boolean increase){

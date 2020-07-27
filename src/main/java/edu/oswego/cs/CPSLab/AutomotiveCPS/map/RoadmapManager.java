@@ -28,21 +28,16 @@ public class RoadmapManager {
     private ArrayList<Boolean> reverses;
     private List<Block> track;
     private List<Intersection> intersections;
-    private List<Intersection> danglingIntersections;
 
     private int id;
 
     public RoadmapManager(Roadmap map, boolean rev, ArrayList<Integer> pieceIDs, ArrayList<Boolean> reverses) {
-//        map.normalize();
         this.map = map;
         this.rev = rev;
         this.pieceIDs = pieceIDs;
         this.reverses = reverses;
-//        this.pieceIDs = new ArrayList<Integer>(pieceIDs.subList(0, pieceIDs.size() - 1));
-//        this.reverses = new ArrayList<Boolean>(reverses.subList(0, reverses.size() - 1));
         track = new ArrayList<Block>();
         intersections = new ArrayList<Intersection>();
-        danglingIntersections = new ArrayList<Intersection>();
         generateTrack();
     }
 
@@ -50,39 +45,27 @@ public class RoadmapManager {
         return map;
     }
 
-    public ArrayList<Integer> getPieceIDs() {
-        return pieceIDs;
-    }
-
-    public ArrayList<Boolean> getReverses() {
-         return reverses;
-    }
-    
     private void generateTrack() {
-        // ArrayList<Roadpiece> pieces = new ArrayList<Roadpiece>(map.toList().subList(0, map.getLength() - 1));
-        ArrayList<Roadpiece> pieces = new ArrayList(map.toList());
-        // temporary solution
+        List<Roadpiece> pieces = map.toList();
         if (rev) {
             Collections.reverse(pieceIDs);
+            Collections.rotate(pieceIDs, 1);
             Collections.reverse(reverses);
-            Collections.reverse(pieces);
-            for (int i = 0; i < pieceIDs.size(); i++) {
-                if (pieceIDs.get(i) != 10) {
-                    reverses.set(i, !reverses.get(i));
-                }
+            Collections.rotate(reverses, 1);
+            for (boolean r : reverses) {
+                r = !r;
             }
         }
-        int distance = pieceIDs.size() - 1 - pieceIDs.indexOf(34);
-        Collections.rotate(pieceIDs, distance);
-        Collections.rotate(reverses, distance);
-        Collections.rotate(pieces, distance);
-
-//        System.out.println(pieceIDs);
-//        System.out.println(reverses);
-//        System.out.println(pieces);
-        
         for (int i = 0; i < pieces.size(); i++) {
-            track.add(new Block(pieceIDs.get(i), reverses.get(i)));
+            if (pieces.get(i).getType().equals(IntersectionRoadpiece.class.getSimpleName())) {
+                if (pieceIDs.get(i) != 10) {
+                    pieceIDs.add(i, 10);
+                    reverses.add(i, false);
+                }
+                track.add(new Block(10, false));
+            } else {
+                track.add(new Block(pieceIDs.get(i), reverses.get(i)));
+            }
             track.get(i).assignPiece(pieces.get(i));
         }
         for (int x = 0; x < track.size(); x++) {
@@ -96,9 +79,6 @@ public class RoadmapManager {
 
         generateIntersections();
         for (Intersection i : intersections) {
-            System.out.println(i.toString());
-        }
-        for (Intersection i : danglingIntersections) {
             System.out.println(i.toString());
         }
     }
@@ -133,9 +113,9 @@ public class RoadmapManager {
         return false;
     }
 
-    public Section lookup(Integer pieceId) {
+    public Section lookup(Integer pieceId, Boolean reverse) {
         for (Block block : track) {
-            if (pieceId == block.getPieceId()) {
+            if (pieceId == block.getPieceId() && reverse == block.getReverse()) {
                 return block.getSection();
             }
         }
@@ -176,14 +156,13 @@ public class RoadmapManager {
 
     public void setID(int id) {
         this.id = id;
-        System.out.println("ID is set to " + id);
     }
 
     public int getID() {
         return id;
     }
 
-    public boolean sameIntersection(boolean sameMap, int piece, int otherPiece) {
+    public boolean sameIntersection(int piece, int otherPiece) {
         for (Intersection i : intersections) {
             if (otherPiece == i.relatedPiece(piece)) {
                 return true;
@@ -230,13 +209,12 @@ public class RoadmapManager {
                     }
                 }
             }
-        } else {
-            System.out.println("No intersection in the map. ");
         }
         // Create intersection instance for intersections that are not paired up
         numbers.removeAll(paired);
+        System.out.println(numbers);
         for (int a : numbers) {
-            danglingIntersections.add(new Intersection(a));
+            intersections.add(new Intersection(a));
         }
         numbers.clear();
     }

@@ -25,6 +25,7 @@ public class CPSTestProgram {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, InterruptedException {
+        System.setProperty("java.net.preferIPv4Stack" , "true");
         System.out.println("Launching connector...");
         AnkiConnector anki = new AnkiConnector("192.168.1.101", 5000);
         System.out.println("...looking for cars...");
@@ -37,19 +38,18 @@ public class CPSTestProgram {
 
         } else {
             System.out.println(vehicles.toString());
+            
             for (Vehicle v : vehicles) {
                 CPSCar c = new CPSCar(v);
-                cars.add(c);
+                cars.add(c);             
             }
-
+            System.out.println(cars);
+            
+            while(true){}
             // Roadmap Manager(s)
             List<RoadmapManager> managers = new ArrayList<>();
 
-//            Scanner kb = new Scanner(System.in);
-            while (true) {
-//                if (kb.nextLine().equalsIgnoreCase("q")) {
-//                    break;
-//                }                
+            while (true) {            
                 // If scan is done, get notified
                 for (CPSCar c : cars) {
                     if (c.scanDone() && c.getManager() == null) {
@@ -70,25 +70,6 @@ public class CPSTestProgram {
                 }
                 Thread.sleep(100);
             }
-
         }
-//        for (CPSCar c : cars) {
-//            c.disconnect();
-//        }
-    }
-
-    private static void adjust(boolean reverse, ArrayList<Integer> carIDs, ArrayList<Boolean> carRevs) {
-        if (reverse) {
-            Collections.reverse(carIDs);
-            Collections.reverse(carRevs);
-            for (int i = 0; i < carIDs.size(); i++) {
-                if (carIDs.get(i) != 10) {
-                    carRevs.set(i, !carRevs.get(i));
-                }
-            }
-        }
-        int distance = carIDs.size() - 1 - carIDs.indexOf(34);
-        Collections.rotate(carIDs, distance);
-        Collections.rotate(carRevs, distance);
     }
 }

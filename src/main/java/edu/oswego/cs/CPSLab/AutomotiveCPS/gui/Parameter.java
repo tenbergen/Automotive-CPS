@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package GUI;
+package edu.oswego.cs.CPSLab.AutomotiveCPS.gui;
 
 import java.util.Arrays;
 import java.util.List;
@@ -25,6 +25,7 @@ public class Parameter {
      */
     public static final int GRID_VGAP = 20;
     public static final int GRID_HGAP = 20;
+    public static final int GRID_HGAP_CONTROL = 50;
     
     public static final int REGION_VGAP = 20;
     public static final int REGION_HGAP = 20;
@@ -47,10 +48,13 @@ public class Parameter {
     public static final int WIDTH_SCENE_CONNECT = 600;
     public static final int HEIGHT_SCENE_CONNECT = 400;
     
+    public static final int WIDTH_SCENE_SCAN_VEHICLES = 500;
+    public static final int HEIGHT_SCENE_SCAN_VEHICLES = 400;
+    
     public static final int WIDTH_SCENE_CONTROL = 1000;
     public static final int HEIGHT_SCENE_CONTROL = 800;
     
-    public static final int WIDTH_SCENE_POPUP = 300;
+    public static final int WIDTH_SCENE_POPUP = 400;
     public static final int HEIGHT_SCENE_POPUP = 200;
     
     /**
@@ -62,11 +66,17 @@ public class Parameter {
     public static final int SIZE_ICON_TINY = 10;
     
     /**
+     * Size of components of Scan Vehicle
+     */ 
+    public static final int HEIGHT_BUTTON_SCAN_VEHICLE = 100;
+    
+    
+    /**
      * Size of components of Control GUI
      */ 
-    public static final int HEIGHT_INDIVIDUAL_CAR = 250;
+    public static final int HEIGHT_INDIVIDUAL_CAR = 650;
     
-    public static final int HEIGHT_LIST_CAR = 200;
+    public static final int HEIGHT_LIST_CAR = 600;
     public static final int WIDTH_LIST_CAR = 100;
     
     public static final int HEIGHT_THUMBNAIL = 100;

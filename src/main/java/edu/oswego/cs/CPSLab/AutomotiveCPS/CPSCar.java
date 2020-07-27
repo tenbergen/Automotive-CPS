@@ -1,15 +1,12 @@
 package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
-import de.adesso.anki.AdvertisementData;
-import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.MessageListener;
 import de.adesso.anki.RoadmapScanner;
 import de.adesso.anki.Vehicle;
 import de.adesso.anki.messages.ChangeLaneMessage;
 import de.adesso.anki.messages.LocalizationIntersectionUpdateMessage;
 import de.adesso.anki.messages.LocalizationPositionUpdateMessage;
-import de.adesso.anki.messages.LocalizationTransitionUpdateMessage;
 import de.adesso.anki.messages.Message;
 import de.adesso.anki.messages.SdkModeMessage;
 import de.adesso.anki.messages.SetOffsetFromRoadCenterMessage;
@@ -17,7 +14,6 @@ import de.adesso.anki.messages.SetSpeedMessage;
 import de.adesso.anki.roadmap.Section;
 import de.adesso.anki.roadmap.Roadmap;
 import de.adesso.anki.roadmap.roadpieces.IntersectionRoadpiece;
-import de.adesso.anki.roadmap.roadpieces.Roadpiece;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.EmergencyStop;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.Follow;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.FourWayIntersection;
@@ -100,23 +96,44 @@ public class CPSCar {
         v.sendMessage(new SdkModeMessage());
         virtualId = -1;
         transition = 0;
-        lpuh = new LocalizationPositionUpdateHandler();
-        v.addMessageListener(LocalizationPositionUpdateMessage.class, lpuh);
-        v.sendMessage(new LocalizationPositionUpdateMessage());
-        ltuh = new LocalizationTransitionUpdateHandler();
-        v.addMessageListener(LocalizationTransitionUpdateMessage.class, ltuh);
-        v.sendMessage(new LocalizationTransitionUpdateMessage());
-        LocalizationIntersectionUpdateHandler liuh = new LocalizationIntersectionUpdateHandler();
-        v.addMessageListener(LocalizationIntersectionUpdateMessage.class, liuh);
-        v.sendMessage(new LocalizationIntersectionUpdateMessage());
-        v.sendMessage(new SetOffsetFromRoadCenterMessage(-68));
-
+        
         scan = new MapScanner(v);
         scanStarted = false;
         scanDone = false;
         pieceIDs = new ArrayList<Integer>();
         reverses = new ArrayList<Boolean>();
-
+        
+        lpuh = new LocalizationPositionUpdateHandler();
+        this.v.addMessageListener(LocalizationPositionUpdateMessage.class, lpuh);
+        v.sendMessage(new LocalizationPositionUpdateMessage());
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        ltuh = new LocalizationTransitionUpdateHandler();
+        v.addMessageListener(LocalizationTransitionUpdateMessage.class, ltuh);
+        v.sendMessage(new LocalizationTransitionUpdateMessage());
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        LocalizationIntersectionUpdateHandler liuh = new LocalizationIntersectionUpdateHandler();
+        v.addMessageListener(LocalizationIntersectionUpdateMessage.class, liuh);
+        v.sendMessage(new LocalizationIntersectionUpdateMessage());
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        v.sendMessage(new SetOffsetFromRoadCenterMessage(-68));
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
+      
         cars = new ArrayList<String[]>();
         time = new ArrayList<Long>();
         date = new Date();
@@ -125,7 +142,7 @@ public class CPSCar {
         approachingIntersection = false;
         t = new Thread(new PositionUpdater());
         t.start();
-        receiver = new MulticastReceiver(v.getAdvertisement().getModel().name());
+        receiver = new MulticastReceiver(this.v.getAdvertisement().getModel().name());
         receiver.start();
         publisher = new MulticastPublisher();
         follow = new Follow(this);
@@ -314,23 +331,12 @@ public class CPSCar {
                     Section s = map.lookup(pieceId);
                     virtualId = map.getBySection(s);
                     if (!this.reverse) {
-                        prevId = (virtualId + map.size() - 1) % map.size();
+                        prevId = (virtualId + map.size() - 1) % map.size();        
                     } else {
                         prevId = (virtualId + 1) % map.size();
                     }
                 }
             }
-//        } else {
-//            if (pieceId != 0 && !scanStarted) {
-//                if (pieceId == 33) {
-//                    reverse = lpuh.reverse;
-//                }
-//                scan.startScanning();
-//                System.out.println(v.getAdvertisement().getModel().name() + ": Started Scanning... ");
-//                pieceIDs.add(pieceId);
-//                reverses.add(lpuh.reverse);
-//                scanStarted = true;
-//            }
         }
         if (this.transition != ltuh.transition) {
             prevLocationId = locationId;
@@ -569,8 +575,8 @@ public class CPSCar {
 //disconnect - stop the thread
     public void disconnect() throws InterruptedException {
         v.disconnect();
-        receiver.stopMC();
-        t.join();
+        //receiver.stopMC();
+        //t.join();
     }
 
     private class MapScanner {

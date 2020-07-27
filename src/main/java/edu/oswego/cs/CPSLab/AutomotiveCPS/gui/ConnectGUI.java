@@ -3,17 +3,17 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package GUI;
+package edu.oswego.cs.CPSLab.AutomotiveCPS.gui;
 
-import Controller.ConnectorDAO;
-import de.adesso.anki.AnkiConnector;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.ConnectorDAO;
+
 import java.io.IOException;
 import java.net.URL;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
-import javafx.application.Platform;
+
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
@@ -21,7 +21,6 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -119,11 +118,10 @@ public class ConnectGUI extends Application {
                     System.out.println(ip+"-"+port);
                     ConnectorDAO connector = new ConnectorDAO(ip,port); 
                     
-                    //Call control stage
                     Stage controlStage = new Stage();
-                    ControlGUI control = new ControlGUI();
-                    control.setConnectorDAO(connector);
-                    control.start(controlStage);
+                    ControlGUI controlGUI = new ControlGUI();
+                    controlGUI.setConnectorDAO(connector);
+                    controlGUI.start(controlStage);
                     controlStage.show();
                     
                     //Clean before close
@@ -132,6 +130,8 @@ public class ConnectGUI extends Application {
                     
                 } catch (IOException ex) {
                     announcement.setText("Connect fail, please try again");
+                    Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (Exception ex) {
                     Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
@@ -162,6 +162,7 @@ public class ConnectGUI extends Application {
     }
     
     public static void main(String[] args) {
+        System.setProperty("java.net.preferIPv4Stack" , "true");
         launch(args);
     }
     

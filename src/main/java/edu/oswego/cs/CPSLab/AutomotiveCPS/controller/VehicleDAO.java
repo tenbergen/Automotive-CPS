@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package Controller;
+package edu.oswego.cs.CPSLab.AutomotiveCPS.controller;
 
 import de.adesso.anki.messages.SetSpeedMessage;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
@@ -209,7 +209,9 @@ public class VehicleDAO {
             pullOver = null;
             changeLane = null;
             uTurn = null;
+            System.out.println("VehicleDAO - Disconnect behaviors");
             cpsCar.disconnect();
+            System.out.println("VehicleDAO - Disconnect cpsCar");
         }catch(Exception e){
             e.printStackTrace();
         }

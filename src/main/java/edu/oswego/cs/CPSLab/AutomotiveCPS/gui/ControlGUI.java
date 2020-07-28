@@ -57,10 +57,7 @@ public class ControlGUI extends Application {
     private Stage stage;
     private ConnectorDAO connectorDAO;
       
-    //******** Map ********
-    private List<MapDAO> maps = new ArrayList<>();
-    List<RoadmapManager> roadmapManagers = new ArrayList<>();
-    private boolean scanTrackComplete = false;
+    //******** Map ********x
     private VBox vbox_map;
     
     //******** Selected Car ********
@@ -99,7 +96,7 @@ public class ControlGUI extends Application {
         grid.setPadding(new Insets(Parameter.SIZE_PADDING,Parameter.SIZE_PADDING,Parameter.SIZE_PADDING,Parameter.SIZE_PADDING));
         grid.setGridLinesVisible(true);
         
-        //this.connectorDAO.scanVehicles();
+        this.connectorDAO.scanVehicles();
         this.connectorDAO.updateVehicles();
         
         //***************************************************
@@ -148,10 +145,11 @@ public class ControlGUI extends Application {
         btn_scan_track.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
-                System.out.println("Scan Track ...");
+                System.out.println("GUI - Scan Track ...");
+                Stage dialog = showPopup("Track is scanning");
+                connectorDAO.scanTrack();
                 drawTrack();
-                //ScanTrackThread scanTrackThread = new ScanTrackThread();
-                //scanTrackThread.start();
+                dialog.close();
             }
         });
         vbox_list_vehicles.getChildren().add(btn_scan_track);
@@ -677,7 +675,7 @@ public class ControlGUI extends Application {
     }
     
     
-    public void showPopup(String message){
+    public Stage showPopup(String message){
         final Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(this.stage);
@@ -703,6 +701,7 @@ public class ControlGUI extends Application {
         dialogScene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
         dialog.setScene(dialogScene);
         dialog.show();
+        return dialog;
     }
     
     class UpdateRealTimeData extends Thread{
@@ -746,95 +745,35 @@ public class ControlGUI extends Application {
         catch(Exception e){
             e.printStackTrace();
         }
-    }
-    
-    public void scanTrack(){
-        int n = connectorDAO.getVehicles().size();
-        Boolean[] check = new Boolean[n];
-        boolean finished = false;
-        for (int i=0;i<n;i++){
-            check[i] = false;
-        }
-        while(!finished){
-            for(int i=0;i<n;i++){
-                if(check[i])
-                    continue;
-                CPSCar c = connectorDAO.getVehicles().get(i).getCpsCar();
-                System.out.println(c.getAddress() + " Scanning... "+i);
-                if (c.scanDone()) {
-                    finished = true;
-                    check[i] = true;
-                    System.out.println(c.getAddress() + ": Scan Done... ");
-                    for (RoadmapManager rm : roadmapManagers) {
-                        if (c.getMap().equals(rm.getMap())) {
-                            System.out.println("Same manager...");
-                            c.setRoadmapMannager(rm);
-                        }
-                    }
-                    if (c.getManager() == null) {
-                        System.out.println("New manager...");
-                        RoadmapManager rm = new RoadmapManager(c.getMap(), c.getReverse(), c.getPieceIDs(), c.getReverses());
-                        roadmapManagers.add(rm);
-                        c.setRoadmapMannager(rm);
-                        rm.setID(roadmapManagers.indexOf(rm));
-                    }
-                }
-                else
-                    finished = false;
-                }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ControlGUI.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            
-            //All vehicles are completed
-            System.out.println("GUI - SCAN FULLY COMPLETED");
-            System.out.println("GUI - RoadmapManager Size "+roadmapManagers.size());
-            this.scanTrackComplete = true;
-    }
-    
-    public void setTrack(List<Block> track){
-        MapDAO map = new MapDAO();
-        map.setTracks(track);
-        map.printBoard();
-        maps.add(map);
-            
-            
-        //mapDAO = new MapDAO();
-        //mapDAO.setTracks(connectorDAO.getVehicles().get(0).getCpsCar().getMap().getTrack());
-        //mapDAO.printBoard();
-        this.drawTrack();
-    }
+    }   
     
     public void drawTrack(){
-        System.out.println("[GUI] Draw Track");
-        
         Text txt_scan = new Text("This is the map");
         txt_scan.setTextAlignment(TextAlignment.CENTER);
         txt_scan.setWrappingWidth(400);
         txt_scan.setId("heading1-text");
-        vbox_map.getChildren().add(txt_scan);   
+        vbox_map.getChildren().add(txt_scan); 
         
-        String[][] dummy = this.dummyMap();
-        
-        for(int k=0;k<2;k++){
+        System.out.println("GUI - Draw Track");
+        List<MapDAO> maps = this.connectorDAO.getMaps();
+        for (MapDAO map : maps){
+            String[][] board = map.getBoard();
             VBox map_GUI = new VBox();
             map_GUI.setAlignment(Pos.CENTER);
-            int rows = dummy.length;
-            int cols = dummy[0].length;
-            int size_piece = 300/rows;
+            int rows = board.length;
+            int cols = board[0].length;
+            int size_piece = 300 / rows;
 
-            for (int i=0;i<rows;i++){
+            for (int i = 0; i < rows; i++) {
                 HBox one_row_map = new HBox();
                 one_row_map.setAlignment(Pos.CENTER);
-                for (int j=0;j<cols;j++){
+                for (int j = 0; j < cols; j++) {
 
-                    if (dummy[i][j]==null)
-                        dummy[i][j] = "null";
-                    System.out.println(dummy[i][j]);
-                    ImageView iv_road_piece = new ImageView(new Image(Parameter.PATH_MEDIA+"Track/"+dummy[i][j]+".png"));
+                    if (board[i][j] == null) {
+                        board[i][j] = "null";
+                    }
+                    System.out.println(board[i][j]);
+                    ImageView iv_road_piece = new ImageView(new Image(Parameter.PATH_MEDIA + "Track/" + board[i][j] + ".png"));
                     //ImageView iv_road_piece = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Track/arrow-up.png"));
                     iv_road_piece.setFitHeight(size_piece);
                     iv_road_piece.setPreserveRatio(true);
@@ -844,52 +783,8 @@ public class ControlGUI extends Application {
                 }
                 map_GUI.getChildren().add(one_row_map);
             }
-            vbox_map.getChildren().add(map_GUI); 
+            vbox_map.getChildren().add(map_GUI);
         }
-        System.out.println("GUI - Draw Done");
-        
+        System.out.println("GUI - Draw Done");   
     }
-    
-    public String[][] dummyMap(){
-        //Create Board
-        //int rows = 4;
-        //int cols = 4;
-        //String[][] board = new String[rows][cols];  
-        String[][] board = {
-            {"null",    "SE",   "SW",   "null", "null"},
-            {"null",    "SV",   "NE",   "SW",   "null"},
-            {"null",    "NE",   "SH",   "IN",   "SW",},
-            {"SE",      "IN",   "SH",   "NW",   "SV"},
-            {"NE",      "IN",   "SH",   "SF",   "NW"}
-        };
-        
-        /*board[0][0] = "SE";
-        board[0][1] = "IN";
-        board[0][2] = "IN";
-        board[0][3] = "SW";
-        
-        board[1][0] = "SV";
-        //board[1][1] = null;
-        //board[1][2] = null;
-        board[1][3] = "SV";
-        
-        board[2][0] = "SV";
-        //board[2][1] = null;
-        //board[2][2] = null;
-        board[2][3] = "SV";
-        
-        board[3][0] = "NE";
-        board[3][1] = "SH";
-        board[3][2] = "SF";
-        board[3][3] = "NW";*/
-        
-        return board;
-    }
-    
-    class ScanTrackThread extends Thread{
-        @Override
-        public void run(){
-            scanTrack();
-        }
-    } 
 }

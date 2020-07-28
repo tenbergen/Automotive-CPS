@@ -8,9 +8,9 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS.controller;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.gui.Parameter;
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.Vehicle;
-import de.adesso.anki.messages.SdkModeMessage;
-import de.adesso.anki.messages.SetSpeedMessage;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,7 +27,15 @@ public class ConnectorDAO {
     private List<VehicleDAO> vehicles;
     private VehicleDAO selectedVehicle;
     private String ip;
-    private int port;
+    private int port;   
+    
+    /** 
+     * Map 
+     */
+    private List<MapDAO> maps = new ArrayList<>();
+    private List<RoadmapManager> managers = new ArrayList<>();  
+    private boolean scanTrackComplete = false;
+    private boolean scanningTrack = false;
     
     public ConnectorDAO(String ip, int port) throws IOException{
         this.ankiConnector = new AnkiConnector(ip,port);
@@ -261,4 +269,71 @@ public class ConnectorDAO {
             return;
         selectedVehicle.performUTurn();   
     }
+
+    /**
+     * Scanning Track
+     */
+    public boolean isScanningTrack() {
+        return scanningTrack;
+    }
+
+    public boolean isScanTrackComplete() {
+        return scanTrackComplete;
+    }
+    
+    public void scanTrack(){
+        while (!scanTrackComplete) {
+            // If scan is done, get notified
+            for (VehicleDAO vehicleDAO : vehicles) {
+                if (vehicleDAO.getCpsCar().scanDone() && vehicleDAO.getCpsCar().getManager() == null) {
+                    for (RoadmapManager rm : managers) {
+                        if (vehicleDAO.getCpsCar().getPieceIDs().equals(rm.getPieceIDs()) && vehicleDAO.getCpsCar().getReverses().equals(rm.getReverses())) {
+                            System.out.println("Same manager...");
+                            vehicleDAO.getCpsCar().setRoadmapMannager(rm);
+                        }
+                    }
+                    if (vehicleDAO.getCpsCar().getManager() == null) {
+                        System.out.println("New manager...");
+                        RoadmapManager rm = new RoadmapManager(vehicleDAO.getCpsCar().getMap(), vehicleDAO.getCpsCar().getReverse(), vehicleDAO.getCpsCar().getPieceIDs(), vehicleDAO.getCpsCar().getReverses());
+                        managers.add(rm);
+                        rm.setID(managers.indexOf(rm));
+                        vehicleDAO.getCpsCar().setRoadmapMannager(rm);
+                    }
+                    scanTrackComplete = true;
+                } else {
+                    scanTrackComplete = false;
+                }
+            }
+            try {
+                Thread.sleep(100);
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ConnectorDAO.class.getName()).log(Level.SEVERE, null, ex);
+            }
+        }
+        System.out.println("GUI - SCAN DONE");
+        System.out.println("GUI - Roadmap Manager: " + managers.toString());
+        System.out.println("GUI - set track");
+        setTrack();
+    }
+
+    /**
+     * Set Track
+     */
+    
+    private void setTrack(){
+        if (!this.scanTrackComplete)
+            return;
+        for(RoadmapManager rm : managers){
+            MapDAO map = new MapDAO();
+            map.setTracks(rm.getTrack());
+            map.printBoard();
+            maps.add(map);
+        }     
+    }
+
+    public List<MapDAO> getMaps() {
+        return maps;
+    }
+    
+    
 }

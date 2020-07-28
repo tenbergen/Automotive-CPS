@@ -15,6 +15,11 @@ import java.util.List;
 public class Parameter {
     
     /**
+     * Path of media
+     */
+    public static final String PATH_MEDIA = "edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/";
+    
+    /**
      * Size of Padding and Spacing
      */
     public static final int SIZE_PADDING = 20;

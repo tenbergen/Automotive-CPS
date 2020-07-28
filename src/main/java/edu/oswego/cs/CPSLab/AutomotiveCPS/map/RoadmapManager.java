@@ -23,7 +23,6 @@ import java.util.List;
 public class RoadmapManager {
 
     private Roadmap map;
-    private boolean rev;
     private ArrayList<Integer> pieceIDs;
     private ArrayList<Boolean> reverses;
     private List<Block> track;
@@ -32,14 +31,10 @@ public class RoadmapManager {
 
     private int id;
 
-    public RoadmapManager(Roadmap map, boolean rev, ArrayList<Integer> pieceIDs, ArrayList<Boolean> reverses) {
-//        map.normalize();
+    public RoadmapManager(Roadmap map, ArrayList<Integer> pieceIDs, ArrayList<Boolean> reverses) {
         this.map = map;
-        this.rev = rev;
         this.pieceIDs = pieceIDs;
         this.reverses = reverses;
-//        this.pieceIDs = new ArrayList<Integer>(pieceIDs.subList(0, pieceIDs.size() - 1));
-//        this.reverses = new ArrayList<Boolean>(reverses.subList(0, reverses.size() - 1));
         track = new ArrayList<Block>();
         intersections = new ArrayList<Intersection>();
         danglingIntersections = new ArrayList<Intersection>();
@@ -59,27 +54,7 @@ public class RoadmapManager {
     }
     
     private void generateTrack() {
-        // ArrayList<Roadpiece> pieces = new ArrayList<Roadpiece>(map.toList().subList(0, map.getLength() - 1));
-        ArrayList<Roadpiece> pieces = new ArrayList(map.toList());
-        // temporary solution
-        if (rev) {
-            Collections.reverse(pieceIDs);
-            Collections.reverse(reverses);
-            Collections.reverse(pieces);
-            for (int i = 0; i < pieceIDs.size(); i++) {
-                if (pieceIDs.get(i) != 10) {
-                    reverses.set(i, !reverses.get(i));
-                }
-            }
-        }
-        int distance = pieceIDs.size() - 1 - pieceIDs.indexOf(34);
-        Collections.rotate(pieceIDs, distance);
-        Collections.rotate(reverses, distance);
-        Collections.rotate(pieces, distance);
-
-//        System.out.println(pieceIDs);
-//        System.out.println(reverses);
-//        System.out.println(pieces);
+        List<Roadpiece> pieces = map.toList();
         
         for (int i = 0; i < pieces.size(); i++) {
             track.add(new Block(pieceIDs.get(i), reverses.get(i)));

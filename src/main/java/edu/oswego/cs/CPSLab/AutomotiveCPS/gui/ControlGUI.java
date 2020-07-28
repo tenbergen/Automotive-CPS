@@ -42,7 +42,9 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
+import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
+import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
@@ -56,11 +58,10 @@ public class ControlGUI extends Application {
     private ConnectorDAO connectorDAO;
       
     //******** Map ********
-    private MapDAO mapDAO;
     private List<MapDAO> maps = new ArrayList<>();
     List<RoadmapManager> roadmapManagers = new ArrayList<>();
-    private ScanTrack scanTrack;
-    private static boolean scan_complete = false;
+    private boolean scanTrackComplete = false;
+    private VBox vbox_map;
     
     //******** Selected Car ********
     private UpdateRealTimeData updateRealTimeData;
@@ -79,15 +80,6 @@ public class ControlGUI extends Application {
     private static final DataFormat JAVA_FORMAT = new DataFormat("application/x-java-serialized-object");
     private TreeItem<String> draggedItem;
     private ListView<String> lv_current_behaviors;
-    
-    
-    public static boolean isScan_complete() {
-        return scan_complete;
-    }
-
-    public static void setScan_complete(boolean scan_complete) {
-        ControlGUI.scan_complete = scan_complete;
-    }
   
     @Override
     public void stop(){
@@ -105,9 +97,9 @@ public class ControlGUI extends Application {
         grid.setHgap(Parameter.GRID_HGAP_CONTROL);
         grid.setVgap(Parameter.GRID_VGAP);
         grid.setPadding(new Insets(Parameter.SIZE_PADDING,Parameter.SIZE_PADDING,Parameter.SIZE_PADDING,Parameter.SIZE_PADDING));
-        //grid.setGridLinesVisible(true);
+        grid.setGridLinesVisible(true);
         
-        this.connectorDAO.scanVehicles();
+        //this.connectorDAO.scanVehicles();
         this.connectorDAO.updateVehicles();
         
         //***************************************************
@@ -150,6 +142,22 @@ public class ControlGUI extends Application {
         });
         vbox_list_vehicles.getChildren().add(btn_rescan);
         
+        //**************** Button Scan Track ****************
+        Button btn_scan_track = new Button("Scan Track");
+        btn_scan_track.setId("control-button");
+        btn_scan_track.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                System.out.println("Scan Track ...");
+                drawTrack();
+                //ScanTrackThread scanTrackThread = new ScanTrackThread();
+                //scanTrackThread.start();
+            }
+        });
+        vbox_list_vehicles.getChildren().add(btn_scan_track);
+        
+        
+        
         //**************** Button Disconnect ****************
         Button btn_disconnect = new Button("Disconnect");
         btn_disconnect.setId("control-button");
@@ -171,26 +179,6 @@ public class ControlGUI extends Application {
         
         grid.add(vbox_list_vehicles,0,0);
         
-        //***************************************************
-        //*********************** Map ***********************
-        //***************************************************
-        /*VBox vbox_map = new VBox();
-        vbox_map.setAlignment(Pos.CENTER);
-        vbox_map.setStyle("-fx-background-color: white;");
-        
-        Text txt_map = new Text("Map");
-        txt_map.setId("heading1-text");
-        vbox_map.getChildren().add(txt_map);
-        
-        Rectangle rec_map = new Rectangle();
-        rec_map.setX(50);
-        rec_map.setY(50);
-        rec_map.setWidth(300);
-        rec_map.setHeight(200);
-        rec_map.setStyle("-fx-background-color: white;");
-        vbox_map.getChildren().add(rec_map);
-        
-        grid.add(vbox_map, 1,0);*/
         
         //***************************************************
         //#################### Control #####################
@@ -209,7 +197,7 @@ public class ControlGUI extends Application {
         vbox_control_parameter_offset.setAlignment(Pos.CENTER);
         
         //Offset icon
-        ImageView iv_control_parameter_offset= new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/offset.png"));
+        ImageView iv_control_parameter_offset= new ImageView(new Image(Parameter.PATH_MEDIA+"Icon/offset.png"));
         iv_control_parameter_offset.setFitHeight(Parameter.SIZE_ICON_MEDIUM);
         iv_control_parameter_offset.setPreserveRatio(true);
         iv_control_parameter_offset.setSmooth(true);
@@ -228,7 +216,7 @@ public class ControlGUI extends Application {
         vbox_control_parameter_speed.setAlignment(Pos.CENTER);
         
         //Speed icon
-        ImageView iv_control_parameter_speed= new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/speed.png"));
+        ImageView iv_control_parameter_speed= new ImageView(new Image(Parameter.PATH_MEDIA+"Icon/speed.png"));
         iv_control_parameter_speed.setFitHeight(Parameter.SIZE_ICON_MEDIUM);
         iv_control_parameter_speed.setPreserveRatio(true);
         iv_control_parameter_speed.setSmooth(true);
@@ -247,7 +235,7 @@ public class ControlGUI extends Application {
         vbox_control_parameter_battery.setAlignment(Pos.CENTER);
         
         //Battery icon
-        ImageView iv_control_parameter_battery= new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/battery.png"));
+        ImageView iv_control_parameter_battery= new ImageView(new Image(Parameter.PATH_MEDIA+"Icon/battery.png"));
         iv_control_parameter_battery.setFitHeight(Parameter.SIZE_ICON_MEDIUM);
         iv_control_parameter_battery.setPreserveRatio(true);
         iv_control_parameter_battery.setSmooth(true);
@@ -293,7 +281,7 @@ public class ControlGUI extends Application {
         hbox_control_adjust_speed.setSpacing(Parameter.COMPONENT_VGAP);
         
         //Adjust speed arrow - UP        
-        ImageView iv_control_adjust_speed_up = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/arrow-up.png"));
+        ImageView iv_control_adjust_speed_up = new ImageView(new Image(Parameter.PATH_MEDIA+"Icon/arrow-up.png"));
         iv_control_adjust_speed_up.setFitHeight(Parameter.SIZE_ICON_SMALL);      
         iv_control_adjust_speed_up.setPreserveRatio(true);
         iv_control_adjust_speed_up.setSmooth(true);
@@ -316,7 +304,7 @@ public class ControlGUI extends Application {
         hbox_control_adjust_speed.getChildren().add(txt_control_adjust_speed);
         
         //Adjust speed arrow - DOWN       
-        ImageView iv_control_adjust_speed_down = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Icon/arrow-down.png"));
+        ImageView iv_control_adjust_speed_down = new ImageView(new Image(Parameter.PATH_MEDIA+"Icon/arrow-down.png"));
         iv_control_adjust_speed_down.setFitHeight(Parameter.SIZE_ICON_SMALL);      
         iv_control_adjust_speed_down.setPreserveRatio(true);
         iv_control_adjust_speed_down.setSmooth(true);
@@ -526,9 +514,22 @@ public class ControlGUI extends Application {
                  
         grid.add(vbox_control,1,0);
         
+        
         //***************************************************
-        //################ Disconnect Button ################
+        //*********************** Map ***********************
         //***************************************************
+        
+        this.vbox_map = new VBox();
+        this.vbox_map.setAlignment(Pos.TOP_CENTER);
+        this.vbox_map.setSpacing(Parameter.BOX_VGAP);
+        
+        Text txt_map = new Text("Map");
+        txt_map.setTextAlignment(TextAlignment.CENTER);
+        txt_map.setId("heading1-text");
+        vbox_map.getChildren().add(txt_map);
+        
+        grid.add(vbox_map, 2,0);
+        
         
         
         //***************************************************
@@ -537,7 +538,7 @@ public class ControlGUI extends Application {
         
         updateRealTimeData = new UpdateRealTimeData();
         updateRealTimeData.start();       
-        //startScanTrack();
+        
                
         Scene scene = new Scene(grid, Parameter.WIDTH_SCENE_CONTROL, Parameter.HEIGHT_SCENE_CONTROL);
         scene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
@@ -578,7 +579,6 @@ public class ControlGUI extends Application {
         
         //Information
         txt_vehicle_name.setText(""+vehicle.getCpsCar().getVehicle());
-        //txt_vehicle_desc.setText("Kind: "+vehicle.getCpsCar().getVehicle().getAdvertisement().getModel());
         iv_vehicle_thumbnail.setImage(new Image(vehicle.getImg()));
         
         //Control
@@ -748,14 +748,51 @@ public class ControlGUI extends Application {
         }
     }
     
-    public void startScanTrack(){
-        ScanTrack scan = new ScanTrack();
-        scan.start();
-        /*for (VehicleDAO v: this.connectorDAO.getVehicles()){
-            ScanTrack scan = new ScanTrack();
-            scan.setVehicleDAO(v);
-            scan.start();
-        }*/
+    public void scanTrack(){
+        int n = connectorDAO.getVehicles().size();
+        Boolean[] check = new Boolean[n];
+        boolean finished = false;
+        for (int i=0;i<n;i++){
+            check[i] = false;
+        }
+        while(!finished){
+            for(int i=0;i<n;i++){
+                if(check[i])
+                    continue;
+                CPSCar c = connectorDAO.getVehicles().get(i).getCpsCar();
+                System.out.println(c.getAddress() + " Scanning... "+i);
+                if (c.scanDone()) {
+                    finished = true;
+                    check[i] = true;
+                    System.out.println(c.getAddress() + ": Scan Done... ");
+                    for (RoadmapManager rm : roadmapManagers) {
+                        if (c.getMap().equals(rm.getMap())) {
+                            System.out.println("Same manager...");
+                            c.setRoadmapMannager(rm);
+                        }
+                    }
+                    if (c.getManager() == null) {
+                        System.out.println("New manager...");
+                        RoadmapManager rm = new RoadmapManager(c.getMap(), c.getReverse(), c.getPieceIDs(), c.getReverses());
+                        roadmapManagers.add(rm);
+                        c.setRoadmapMannager(rm);
+                        rm.setID(roadmapManagers.indexOf(rm));
+                    }
+                }
+                else
+                    finished = false;
+                }
+                try {
+                    Thread.sleep(100);
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ControlGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+            }
+            
+            //All vehicles are completed
+            System.out.println("GUI - SCAN FULLY COMPLETED");
+            System.out.println("GUI - RoadmapManager Size "+roadmapManagers.size());
+            this.scanTrackComplete = true;
     }
     
     public void setTrack(List<Block> track){
@@ -773,57 +810,86 @@ public class ControlGUI extends Application {
     
     public void drawTrack(){
         System.out.println("[GUI] Draw Track");
+        
+        Text txt_scan = new Text("This is the map");
+        txt_scan.setTextAlignment(TextAlignment.CENTER);
+        txt_scan.setWrappingWidth(400);
+        txt_scan.setId("heading1-text");
+        vbox_map.getChildren().add(txt_scan);   
+        
+        String[][] dummy = this.dummyMap();
+        
+        for(int k=0;k<2;k++){
+            VBox map_GUI = new VBox();
+            map_GUI.setAlignment(Pos.CENTER);
+            int rows = dummy.length;
+            int cols = dummy[0].length;
+            int size_piece = 300/rows;
+
+            for (int i=0;i<rows;i++){
+                HBox one_row_map = new HBox();
+                one_row_map.setAlignment(Pos.CENTER);
+                for (int j=0;j<cols;j++){
+
+                    if (dummy[i][j]==null)
+                        dummy[i][j] = "null";
+                    System.out.println(dummy[i][j]);
+                    ImageView iv_road_piece = new ImageView(new Image(Parameter.PATH_MEDIA+"Track/"+dummy[i][j]+".png"));
+                    //ImageView iv_road_piece = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Track/arrow-up.png"));
+                    iv_road_piece.setFitHeight(size_piece);
+                    iv_road_piece.setPreserveRatio(true);
+                    iv_road_piece.setSmooth(true);
+                    iv_road_piece.setCache(true);
+                    one_row_map.getChildren().add(iv_road_piece);
+                }
+                map_GUI.getChildren().add(one_row_map);
+            }
+            vbox_map.getChildren().add(map_GUI); 
+        }
+        System.out.println("GUI - Draw Done");
+        
     }
     
-    public class ScanTrack extends Thread{
+    public String[][] dummyMap(){
+        //Create Board
+        //int rows = 4;
+        //int cols = 4;
+        //String[][] board = new String[rows][cols];  
+        String[][] board = {
+            {"null",    "SE",   "SW",   "null", "null"},
+            {"null",    "SV",   "NE",   "SW",   "null"},
+            {"null",    "NE",   "SH",   "IN",   "SW",},
+            {"SE",      "IN",   "SH",   "NW",   "SV"},
+            {"NE",      "IN",   "SH",   "SF",   "NW"}
+        };
         
+        /*board[0][0] = "SE";
+        board[0][1] = "IN";
+        board[0][2] = "IN";
+        board[0][3] = "SW";
+        
+        board[1][0] = "SV";
+        //board[1][1] = null;
+        //board[1][2] = null;
+        board[1][3] = "SV";
+        
+        board[2][0] = "SV";
+        //board[2][1] = null;
+        //board[2][2] = null;
+        board[2][3] = "SV";
+        
+        board[3][0] = "NE";
+        board[3][1] = "SH";
+        board[3][2] = "SF";
+        board[3][3] = "NW";*/
+        
+        return board;
+    }
+    
+    class ScanTrackThread extends Thread{
         @Override
         public void run(){
-            boolean finished=false;
-            int n = connectorDAO.getVehicles().size();
-            Boolean[] check = new Boolean[n];
-            for (int i=0;i<n;i++){
-                check[i] = false;
-            }
-            while(!finished){
-                for(int i=0;i<n;i++){
-                    if(check[i])
-                        continue;
-                    CPSCar c = connectorDAO.getVehicles().get(i).getCpsCar();
-                    System.out.println(c.getAddress() + " Scanning... "+i);
-                    if (c.scanDone()) {
-                        finished = true;
-                        check[i] = true;
-                        System.out.println(c.getAddress() + ": Scan Done... ");
-                        for (RoadmapManager rm : roadmapManagers) {
-                            if (c.getMap().equals(rm.getMap())) {
-                                System.out.println("Same manager...");
-                                c.setRoadmapMannager(rm);
-                            }
-                        }
-                        if (c.getManager() == null) {
-                            System.out.println("New manager...");
-                            RoadmapManager rm = new RoadmapManager(c.getMap(), c.getReverse(), c.getPieceIDs(), c.getReverses());
-                            roadmapManagers.add(rm);
-                            c.setRoadmapMannager(rm);
-                            rm.setID(roadmapManagers.indexOf(rm));
-                        }
-                    }
-                    else
-                        finished = false;
-                }
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ControlGUI.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            
-            //All vehicles are completed
-            System.out.println("GUI - SCAN FULLY COMPLETED");
-            System.out.println("GUI - RoadmapManager Size "+roadmapManagers.size());
+            scanTrack();
         }
-        
-    }
-    
+    } 
 }

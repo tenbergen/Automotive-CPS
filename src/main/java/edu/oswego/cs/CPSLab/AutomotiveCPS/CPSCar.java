@@ -2,11 +2,10 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import de.adesso.anki.MessageListener;
-import de.adesso.anki.RoadmapScanner;
 import de.adesso.anki.Vehicle;
-import de.adesso.anki.messages.ChangeLaneMessage;
 import de.adesso.anki.messages.LocalizationIntersectionUpdateMessage;
 import de.adesso.anki.messages.LocalizationPositionUpdateMessage;
+import de.adesso.anki.messages.LocalizationTransitionUpdateMessage;
 import de.adesso.anki.messages.Message;
 import de.adesso.anki.messages.SdkModeMessage;
 import de.adesso.anki.messages.SetOffsetFromRoadCenterMessage;

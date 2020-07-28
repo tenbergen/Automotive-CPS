@@ -15,6 +15,11 @@ import java.util.List;
 public class Parameter {
     
     /**
+     * Path of media
+     */
+    public static final String PATH_MEDIA = "edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/";
+    
+    /**
      * Size of Padding and Spacing
      */
     public static final int SIZE_PADDING = 20;
@@ -51,7 +56,7 @@ public class Parameter {
     public static final int WIDTH_SCENE_SCAN_VEHICLES = 500;
     public static final int HEIGHT_SCENE_SCAN_VEHICLES = 400;
     
-    public static final int WIDTH_SCENE_CONTROL = 1000;
+    public static final int WIDTH_SCENE_CONTROL = 1200;
     public static final int HEIGHT_SCENE_CONTROL = 800;
     
     public static final int WIDTH_SCENE_POPUP = 400;
@@ -81,6 +86,8 @@ public class Parameter {
     
     public static final int HEIGHT_THUMBNAIL = 100;
     public static final int WIDTH_DESCRIPTION_CAR = 250;
+    
+    public static final int SIZE_ROAD_PIECE = 50;
     
     
     

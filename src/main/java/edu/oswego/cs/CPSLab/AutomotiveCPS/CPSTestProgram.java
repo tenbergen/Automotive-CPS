@@ -10,6 +10,7 @@ import de.adesso.anki.messages.SetSpeedMessage;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
@@ -45,21 +46,15 @@ public class CPSTestProgram {
             System.out.println(cars);
             
             while(true){}
-            /*
             // Roadmap Manager(s)
             List<RoadmapManager> managers = new ArrayList<>();
 
-//            Scanner kb = new Scanner(System.in);
-            while (true) {
-//                if (kb.nextLine().equalsIgnoreCase("q")) {
-//                    break;
-//                }                
+            while (true) {            
                 // If scan is done, get notified
                 for (CPSCar c : cars) {
-                    if (c.scanDone()) {
-                        System.out.println(c.getAddress() + ": Scan Done... ");
+                    if (c.scanDone() && c.getManager() == null) {
                         for (RoadmapManager rm : managers) {
-                            if (c.getMap().equals(rm.getMap())) {
+                            if (c.getPieceIDs().equals(rm.getPieceIDs()) && c.getReverses().equals(rm.getReverses())) {
                                 System.out.println("Same manager...");
                                 c.setRoadmapMannager(rm);
                             }
@@ -68,18 +63,13 @@ public class CPSTestProgram {
                             System.out.println("New manager...");
                             RoadmapManager rm = new RoadmapManager(c.getMap(), c.getReverse(), c.getPieceIDs(), c.getReverses());
                             managers.add(rm);
-                            c.setRoadmapMannager(rm);
                             rm.setID(managers.indexOf(rm));
+                            c.setRoadmapMannager(rm);
                         }
                     }
                 }
                 Thread.sleep(100);
             }
-
-        }
-        for (CPSCar c : cars) {
-            c.disconnect();
-        }*/
         }
     }
 }

@@ -5,15 +5,10 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.Vehicle;
-import de.adesso.anki.messages.SdkModeMessage;
-import de.adesso.anki.messages.SetSpeedMessage;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Random;
-import java.util.Scanner;
 
 /**
  *
@@ -40,8 +35,8 @@ public class CPSTestProgram {
                 CPSCar c = new CPSCar(v);
                 cars.add(c);
             }
-
-            // Roadmap Manager(s)
+          
+            // Roadmap Manager(s)  
             List<RoadmapManager> managers = new ArrayList<>();
             
             while (true) {

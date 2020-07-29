@@ -97,18 +97,43 @@ public class CPSCar {
         this.v = v;
         v.connect();
         v.sendMessage(new SdkModeMessage());
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
         virtualId = -1;
         transition = 0;
         lpuh = new LocalizationPositionUpdateHandler();
         v.addMessageListener(LocalizationPositionUpdateMessage.class, lpuh);
         v.sendMessage(new LocalizationPositionUpdateMessage());
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
         ltuh = new LocalizationTransitionUpdateHandler();
         v.addMessageListener(LocalizationTransitionUpdateMessage.class, ltuh);
         v.sendMessage(new LocalizationTransitionUpdateMessage());
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
         LocalizationIntersectionUpdateHandler liuh = new LocalizationIntersectionUpdateHandler();
         v.addMessageListener(LocalizationIntersectionUpdateMessage.class, liuh);
         v.sendMessage(new LocalizationIntersectionUpdateMessage());
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
         v.sendMessage(new SetOffsetFromRoadCenterMessage(-68));
+        try {
+            Thread.sleep(10);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
 
         scan = new MapScanner(v);
         scanStarted = false;
@@ -560,8 +585,8 @@ public class CPSCar {
 //disconnect - stop the thread
     public void disconnect() throws InterruptedException {
         v.disconnect();
-        receiver.stopMC();
-        t.join();
+        //receiver.stopMC();
+        //t.join();
     }
 
     private class MapScanner {

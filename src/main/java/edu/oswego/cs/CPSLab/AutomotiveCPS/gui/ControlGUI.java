@@ -8,14 +8,11 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS.gui;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.ConnectorDAO;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.MapDAO;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.VehicleDAO;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -30,6 +27,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -42,11 +40,11 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 /**
  *
@@ -146,10 +144,39 @@ public class ControlGUI extends Application {
             @Override
             public void handle(ActionEvent e) {
                 System.out.println("GUI - Scan Track ...");
-                Stage dialog = showPopup("Track is scanning");
-                connectorDAO.scanTrack();
-                drawTrack();
-                dialog.close();
+                vbox_map.getChildren().clear();
+                
+                Text txt_map = new Text("Map");
+                txt_map.setTextAlignment(TextAlignment.CENTER);
+                txt_map.setId("heading1-text");
+                vbox_map.getChildren().add(txt_map);
+                
+                Stage dialog = loadingPopup("Please wait until scanning is finished");                              
+
+                Thread name = new Thread() {
+                    @Override
+                    public void run() {
+                        connectorDAO.scanTrack();
+                        while(!connectorDAO.isScanTrackComplete()){
+                            try {
+                                sleep(100);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(ControlGUI.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        System.out.println("GUI - Thread is DONE");
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {                             
+                                drawTrack();
+                                dialog.close();
+                            }
+                        });
+
+                    }
+                };
+                name.start();
+                
             }
         });
         vbox_list_vehicles.getChildren().add(btn_scan_track);
@@ -162,6 +189,7 @@ public class ControlGUI extends Application {
         btn_disconnect.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
+                
                 disconnect();
                 
                 //Call Connect stage
@@ -704,6 +732,31 @@ public class ControlGUI extends Application {
         return dialog;
     }
     
+    public Stage loadingPopup(String message){
+        final Stage dialog = new Stage();
+        dialog.initStyle(StageStyle.UNDECORATED);
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(this.stage);
+        
+        VBox dialogVbox = new VBox(Parameter.BOX_VGAP);
+        dialogVbox.setAlignment(Pos.CENTER);
+        dialogVbox.setId("message-vbox");
+        
+        Text txt_message = new Text(message);
+        txt_message.setId("message-text");
+        dialogVbox.getChildren().add(txt_message);
+        
+        final ProgressIndicator pi = new ProgressIndicator();
+        pi.setProgress(-1.0f);
+        dialogVbox.getChildren().add(pi);
+        
+        Scene dialogScene = new Scene(dialogVbox, Parameter.WIDTH_SCENE_POPUP, Parameter.HEIGHT_SCENE_POPUP);
+        dialogScene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
+        dialog.setScene(dialogScene);
+        dialog.show();
+        return dialog;
+    }
+    
     class UpdateRealTimeData extends Thread{
         boolean status = true;
         @Override
@@ -787,4 +840,5 @@ public class ControlGUI extends Application {
         }
         System.out.println("GUI - Draw Done");   
     }
+    
 }

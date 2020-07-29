@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.application.Platform;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -21,12 +22,15 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 /**
  *
@@ -34,11 +38,15 @@ import javafx.stage.Stage;
  */
 public class ConnectGUI extends Application {
     
-    public GridPane grid;
+    private Stage stage;
+    private GridPane grid;
+    int port;
+    String ip;
+    ConnectorDAO connector;
     
     @Override
-    public void start(Stage primaryStage) {
-      
+    public void start(Stage stage) {
+        this.stage = stage;
         grid = new GridPane();
         grid.setId("connection-grid");
         grid.setAlignment(Pos.CENTER);
@@ -83,8 +91,7 @@ public class ConnectGUI extends Application {
  
             @Override
             public void handle(ActionEvent e) {
-                String ip = txt_ip_address.getText();
-                int port=5000;
+                ip = txt_ip_address.getText();
                 
                 //Handle port input
                 try{
@@ -96,45 +103,44 @@ public class ConnectGUI extends Application {
                 }       
                 
                 //Launching connector
+                System.out.println("Launching connector...");
+
+                Stage dialog = loadingPopup("Please wait until connecting is finished");
                 try {
-                    System.out.println("Launching connector...");
-                    /*final ProgressIndicator pi = new ProgressIndicator();
-                    pi.setProgress(-1.0f);
-                    grid.add(pi, 1, 7);*/
-                    
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                System.out.print(".");
-                                Thread.sleep(100);
-                                
-                            } 
-                            catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }).start();
-                    
-                    System.out.println(ip+"-"+port);
-                    ConnectorDAO connector = new ConnectorDAO(ip,port); 
-                    
-                    Stage controlStage = new Stage();
-                    ControlGUI controlGUI = new ControlGUI();
-                    controlGUI.setConnectorDAO(connector);
-                    controlGUI.start(controlStage);
-                    controlStage.show();
-                    
-                    //Clean before close
-                    connector.getAnkiConnector().close();
-                    primaryStage.close();
-                    
-                } catch (IOException ex) {
-                    announcement.setText("Connect fail, please try again");
-                    Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (Exception ex) {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex) {
                     Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                System.out.println(ip + "-" + port);
+                
+                new Thread() {
+                    @Override
+                    public void run() {
+                        try {
+                            connector = new ConnectorDAO(ip, port);
+                        } catch (IOException ex) {
+                            announcement.setText("Connect fail, please try again");
+                            Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                dialog.close();
+                                Stage controlStage = new Stage();
+                                ControlGUI controlGUI = new ControlGUI();
+                                controlGUI.setConnectorDAO(connector);
+                                controlGUI.start(controlStage);
+                                controlStage.show();
+
+                                //Clean before close
+                                connector.getAnkiConnector().close();
+                                stage.close();
+                            }
+                        });
+                    }
+                }.start();
+               
+                
             }
         });
         
@@ -146,10 +152,10 @@ public class ConnectGUI extends Application {
         URL url = ConnectGUI.class.getResource(".");
         System.out.println("Value = " + url);
         
-        primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
-        primaryStage.setTitle("CPS Connection");
-        primaryStage.show();
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.setTitle("CPS Connection");
+        stage.show();
     }
     
     public GridPane getGrid(){
@@ -167,13 +173,29 @@ public class ConnectGUI extends Application {
         launch(args);
     }
     
-    public class LoadingThread extends Thread {
-
-        @Override
-        public void run(){
-           System.out.println("MyThread running");
-           //Progress bar 
-           
-        }
+    public Stage loadingPopup(String message){
+        final Stage dialog = new Stage();
+        dialog.initStyle(StageStyle.UNDECORATED);
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(this.stage);
+        
+        VBox dialogVbox = new VBox(Parameter.BOX_VGAP);
+        dialogVbox.setAlignment(Pos.CENTER);
+        dialogVbox.setId("message-vbox");
+        
+        Text txt_message = new Text(message);
+        txt_message.setId("message-text");
+        dialogVbox.getChildren().add(txt_message);
+        
+        /*final ProgressIndicator pi = new ProgressIndicator();
+        pi.setProgress(-1.0f);
+        dialogVbox.getChildren().add(pi);*/
+        
+        Scene dialogScene = new Scene(dialogVbox, Parameter.WIDTH_SCENE_POPUP, Parameter.HEIGHT_SCENE_POPUP);
+        dialogScene.getStylesheets().add(ConnectGUI.class.getResource("design-style.css").toExternalForm());
+        dialog.setScene(dialogScene);
+        dialog.show();
+        return dialog;
     }
+   
 }

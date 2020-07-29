@@ -281,8 +281,61 @@ public class ConnectorDAO {
         return scanTrackComplete;
     }
     
+    public void resetTrack(){
+        maps.clear();
+        managers.clear();
+        scanTrackComplete = false;
+        scanningTrack = false;
+    }
     public void scanTrack(){
-        while (!scanTrackComplete) {
+        resetTrack();
+        
+        
+        Thread name = new Thread() {
+            @Override
+            public void run() {
+                scanningTrack = true;
+                while (scanningTrack) {
+                    // If scan is done, get notified
+                    for (VehicleDAO vehicleDAO : vehicles) {
+                        if (vehicleDAO.getCpsCar().scanDone() && vehicleDAO.getCpsCar().getManager() == null) {
+                            for (RoadmapManager rm : managers) {
+                                if (vehicleDAO.getCpsCar().getPieceIDs().equals(rm.getPieceIDs()) && vehicleDAO.getCpsCar().getReverses().equals(rm.getReverses())) {
+                                    System.out.println("Same manager...");
+                                    vehicleDAO.getCpsCar().setRoadmapMannager(rm);
+                                }
+                            }
+                            if (vehicleDAO.getCpsCar().getManager() == null) {
+                                System.out.println("New manager...");
+                                RoadmapManager rm = new RoadmapManager(vehicleDAO.getCpsCar().getMap(), vehicleDAO.getCpsCar().getPieceIDs(), vehicleDAO.getCpsCar().getReverses());
+                                managers.add(rm);
+                                rm.setID(managers.indexOf(rm));
+                                vehicleDAO.getCpsCar().setRoadmapMannager(rm);
+                            }
+                            scanningTrack = false;
+                        } else {
+                            scanningTrack = true;
+                        }
+                    }
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(ConnectorDAO.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                System.out.println("GUI - SCAN DONE");
+                System.out.println("GUI - scanningTrack: " + scanningTrack);
+                System.out.println("GUI - set track");
+                setTrack();
+                scanTrackComplete = true;
+                System.out.println("GUI - scanTrackComplete: " + scanTrackComplete);
+            }
+        };
+        name.start();
+        
+        
+        
+        /*while (!scanTrackComplete) {
             // If scan is done, get notified
             for (VehicleDAO vehicleDAO : vehicles) {
                 if (vehicleDAO.getCpsCar().scanDone() && vehicleDAO.getCpsCar().getManager() == null) {
@@ -294,7 +347,7 @@ public class ConnectorDAO {
                     }
                     if (vehicleDAO.getCpsCar().getManager() == null) {
                         System.out.println("New manager...");
-                        RoadmapManager rm = new RoadmapManager(vehicleDAO.getCpsCar().getMap(), vehicleDAO.getCpsCar().getReverse(), vehicleDAO.getCpsCar().getPieceIDs(), vehicleDAO.getCpsCar().getReverses());
+                        RoadmapManager rm = new RoadmapManager(vehicleDAO.getCpsCar().getMap(), vehicleDAO.getCpsCar().getPieceIDs(), vehicleDAO.getCpsCar().getReverses());
                         managers.add(rm);
                         rm.setID(managers.indexOf(rm));
                         vehicleDAO.getCpsCar().setRoadmapMannager(rm);
@@ -313,16 +366,14 @@ public class ConnectorDAO {
         System.out.println("GUI - SCAN DONE");
         System.out.println("GUI - Roadmap Manager: " + managers.toString());
         System.out.println("GUI - set track");
-        setTrack();
+        setTrack();*/
     }
 
     /**
      * Set Track
      */
     
-    private void setTrack(){
-        if (!this.scanTrackComplete)
-            return;
+    public void setTrack(){
         for(RoadmapManager rm : managers){
             MapDAO map = new MapDAO();
             map.setTracks(rm.getTrack());

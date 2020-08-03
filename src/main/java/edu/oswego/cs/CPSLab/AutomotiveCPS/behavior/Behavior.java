@@ -6,7 +6,6 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS.behavior;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.*;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import de.adesso.anki.roadmap.Roadmap;
-import de.adesso.anki.roadmap.Section;
 
 /**
  *
@@ -24,7 +23,6 @@ public abstract class Behavior {
     protected float offset;
     protected int prevLocationId;
     protected int prevId;
-    protected Section section;
 
     public Behavior(CPSCar car) {
         this.car = car;
@@ -40,7 +38,6 @@ public abstract class Behavior {
         offset = car.getOffset();
         prevLocationId = car.getPrevLocationId();
         prevId = car.getPrevId();
-        section = car.getSection();
     }
 
     public String[] parseBroadcast(String received) {

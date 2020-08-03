@@ -25,15 +25,16 @@ public class CPSTestProgram {
         System.out.println("...looking for cars...");
         List<Vehicle> vehicles = anki.findVehicles(); // Add the CPSCar class to AnkiConnector?
         List<CPSCar> cars = new ArrayList<>();
-
+        
         if (vehicles.isEmpty()) {
             System.out.println(" NO CARS FOUND. I guess that means we're done.");
-
+            
         } else {
             System.out.println(vehicles.toString());
             for (Vehicle v : vehicles) {
                 CPSCar c = new CPSCar(v);
                 cars.add(c);
+                Thread.sleep(100);
             }
           
             // Roadmap Manager(s)  
@@ -44,6 +45,8 @@ public class CPSTestProgram {
                 for (CPSCar c : cars) {
                     if (c.scanDone() && c.getManager() == null) {
                         for (RoadmapManager rm : managers) {
+//                            System.out.println(c.getMap().toString());
+//                            System.out.println(rm.getMap().toString());
                             if (c.getMap().equals(rm.getMap())) {
                                 System.out.println("Same manager...");
                                 c.setRoadmapMannager(rm);
@@ -51,6 +54,7 @@ public class CPSTestProgram {
                         }
                         if (c.getManager() == null) {
                             System.out.println("New manager...");
+                            System.out.println(c.getMap());
                             RoadmapManager rm = new RoadmapManager(c.getMap(), c.getPieceIDs(), c.getReverses());
                             managers.add(rm);
                             rm.setID(managers.indexOf(rm));

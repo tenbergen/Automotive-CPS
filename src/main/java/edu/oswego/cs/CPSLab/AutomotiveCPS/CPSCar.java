@@ -108,7 +108,6 @@ public class CPSCar {
         LocalizationIntersectionUpdateHandler liuh = new LocalizationIntersectionUpdateHandler();
         v.addMessageListener(LocalizationIntersectionUpdateMessage.class, liuh);
         v.sendMessage(new LocalizationIntersectionUpdateMessage());
-        v.sendMessage(new SetOffsetFromRoadCenterMessage(-68));
 
         scan = new MapScanner(v);
         scanStarted = false;
@@ -142,7 +141,7 @@ public class CPSCar {
     private void scanTrack() {
         if (!scanStarted) {
             scan.startScanning();
-            v.sendMessage(new SetSpeedMessage(500, 12500));
+            v.sendMessage(new SetSpeedMessage(400, 12500));
             System.out.println(v.getAdvertisement().getModel().name() + ": Started Scanning... ");
             scanStarted = true;
         }
@@ -174,7 +173,6 @@ public class CPSCar {
 
     public void setRoadmapMannager(RoadmapManager rm) {
         this.map = rm;
-        System.out.println(this.map.getID());
         System.out.println(v.getAdvertisement().getModel().name() + ": Track Completed... ");
     }
 
@@ -244,7 +242,7 @@ public class CPSCar {
         try {
             mapID = this.map.getID();
         } catch (NullPointerException e) {
-            e.printStackTrace();
+            // e.printStackTrace();
         }
         if (inCarList(parsed[0]) != -1) {
             int piece = Integer.parseInt(parsed[1]);
@@ -269,12 +267,16 @@ public class CPSCar {
                         if (piece <= (virtualId + 2) % (map.size()) && piece >= (virtualId - 2) % (map.size())) {
                             cars.add(parsed);
                             time.add(date.getTime());
-                            if (approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(true, (virtualId + 1) % map.size(), Integer.parseInt(parsed[1]))) {
-                                intersection.add(parsed[0]);
-                            }
+                        }
+                        boolean condition1 = approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(true, (virtualId + 1) % map.size(), Integer.parseInt(parsed[1]));
+                        boolean condition2 = atIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(true, (virtualId) % map.size(), Integer.parseInt(parsed[1]));
+                        if (condition1 || condition2) {
+                            intersection.add(parsed[0]);
                         }
                     } else {
-                        if (approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(false, (virtualId + 1) % map.size(), Integer.parseInt(parsed[1]))) {
+                        boolean condition1 = approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(false, (virtualId + 1) % map.size(), Integer.parseInt(parsed[1]));
+                        boolean condition2 = atIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(false, (virtualId) % map.size(), Integer.parseInt(parsed[1]));
+                        if (condition1 || condition2) {
                             cars.add(parsed);
                             time.add(date.getTime());
                             intersection.add(parsed[0]);
@@ -308,10 +310,10 @@ public class CPSCar {
                 if (!map.duplicate(pieceId)) {
                     Section s = map.lookup(pieceId);
                     if (!this.reverse) {
-                        virtualId = (map.getBySection(s)) % map.size();
+                        virtualId = (map.getBySection(s) + 1) % map.size();
                         prevId = (virtualId + map.size() - 1) % map.size();
                     } else {
-                        virtualId = (map.getBySection(s)) % map.size();
+                        virtualId = (map.getBySection(s) - 1) % map.size();
                         prevId = (virtualId + 1) % map.size();
                     }
                 }
@@ -384,7 +386,7 @@ public class CPSCar {
             pieceId = m.getRoadPieceId();
             speed = m.getSpeed();
             offset = m.getOffsetFromRoadCenter();
-            System.out.println("   Right now we are on: " + virtualId + ". Location: " + locationId + ". ");
+            System.out.println(v.getAdvertisement().getModel().name() + ":   Right now we are on: " + virtualId + ". Location: " + locationId + ". ");
             if (scanStarted) {
                 if (!scan.isComplete()) {
                 } else {
@@ -408,17 +410,46 @@ public class CPSCar {
                     int distance = pieceIDs.size() - 1 - pieceIDs.indexOf(34);
                     Collections.rotate(pieceIDs, distance);
                     Collections.rotate(reverses, distance);
+//                    if (reverse) {
+//                        System.out.println(v.getAdvertisement().getModel().name() + ": true...");
+//                        try {
+//                            Thread.sleep(50);
+//                        } catch (InterruptedException ex) {
+//                            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+//                        v.sendMessage(new SetOffsetFromRoadCenterMessage(68));
+//                        try {
+//                            Thread.sleep(50);
+//                        } catch (InterruptedException ex) {
+//                            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+//                        v.sendMessage(new ChangeLaneMessage(-68, 100, 100));
+//                    } else {
+//                        System.out.println(v.getAdvertisement().getModel().name() + ": false...");
+//                        try {
+//                            Thread.sleep(50);
+//                        } catch (InterruptedException ex) {
+//                            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+//                        v.sendMessage(new SetOffsetFromRoadCenterMessage(-68));
+//                        try {
+//                            Thread.sleep(50);
+//                        } catch (InterruptedException ex) {
+//                            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+//                        }
+//                        v.sendMessage(new ChangeLaneMessage(68, 100, 100));
+//                    }
+//                    v.sendMessage(new SetSpeedMessage(0, 12500));
+                    try {
+                        Thread.sleep(50);
+                    } catch (InterruptedException ex) {
+                        Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    scan.reset();
                     t.start();
                     receiver.start();
                     scanStarted = false;
                     scanDone = true;
-//                    try {
-//                        Thread.sleep(10);
-//                    } catch (InterruptedException ex) {
-//                        Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                    v.sendMessage(new SetSpeedMessage(0, 12500));
-//                    v.sendMessage(new ChangeLaneMessage(68, 100, 100));
                 }
             }
         }
@@ -456,7 +487,6 @@ public class CPSCar {
                     intersection.clear();
                 } else {
                     approachingIntersection = false;
-                    atIntersection = true;
                     try {
                         Thread.sleep(5);
                     } catch (InterruptedException ex) {
@@ -464,6 +494,7 @@ public class CPSCar {
                     }
                     v.sendMessage(new SetSpeedMessage(0, 12500));
                     intersection.add(v.getAddress());
+                    atIntersection = true;
                 }
             }
         }
@@ -515,7 +546,7 @@ public class CPSCar {
                     String[] parsed = parseBroadcast(received);
                     updateCPSNetwork(parsed);
                     if (cars.contains(parsed)) {
-                        System.out.println(Arrays.toString(parsed) + " was received by " + id);
+                        // System.out.println(Arrays.toString(parsed) + " was received by " + id);
                         follow.follow(received);
                         emergStop.emergStop(received);
                     }
@@ -655,23 +686,25 @@ public class CPSCar {
         }
 
         protected void handleTransitionUpdate(LocalizationTransitionUpdateMessage message) {
-            if (lastPosition != null) {
-                roadmap.add(
-                        lastPosition.getRoadPieceId(),
-                        lastPosition.getLocationId(),
-                        lastPosition.isParsedReverse()
-                );
+            if (!scanDone) {
+                if (lastPosition != null) {
+                    roadmap.add(
+                            lastPosition.getRoadPieceId(),
+                            lastPosition.getLocationId(),
+                            lastPosition.isParsedReverse()
+                    );
 
-                pieceIDs.add(lastPosition.getRoadPieceId());
-                reverses.add(lastPosition.isParsedReverse());
-//                System.out.println("Added a piece... " + pieceIDs.get(pieceIDs.size() - 1));
+                    pieceIDs.add(lastPosition.getRoadPieceId());
+                    reverses.add(lastPosition.isParsedReverse());
+                    // System.out.println(v.getAdvertisement().getModel().name() + ": Added a piece... " + pieceIDs.get(pieceIDs.size() - 1));
 
-                if (lastPosition.getRoadPieceId() == 33 || lastPosition.getRoadPieceId() == 34) {
-                    initReverse = lastPosition.isParsedReverse();
-                }
+                    if (lastPosition.getRoadPieceId() == 33 || lastPosition.getRoadPieceId() == 34) {
+                        initReverse = lastPosition.isParsedReverse();
+                    }
 
-                if (roadmap.isComplete()) {
-                    this.stopScanning();
+//                    if (roadmap.isComplete()) {
+//                        this.stopScanning();
+//                    }
                 }
             }
         }

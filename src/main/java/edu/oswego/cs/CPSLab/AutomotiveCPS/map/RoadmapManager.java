@@ -50,12 +50,12 @@ public class RoadmapManager {
     }
 
     public ArrayList<Boolean> getReverses() {
-         return reverses;
+        return reverses;
     }
-    
+
     private void generateTrack() {
         List<Roadpiece> pieces = map.toList();
-        
+
         for (int i = 0; i < pieces.size(); i++) {
             track.add(new Block(pieceIDs.get(i), reverses.get(i)));
             track.get(i).assignPiece(pieces.get(i));
@@ -159,9 +159,17 @@ public class RoadmapManager {
     }
 
     public boolean sameIntersection(boolean sameMap, int piece, int otherPiece) {
-        for (Intersection i : intersections) {
-            if (otherPiece == i.relatedPiece(piece)) {
-                return true;
+        if (sameMap) {
+            for (Intersection i : intersections) {
+                if (otherPiece == i.relatedPiece(piece)) {
+                    return true;
+                }
+            }
+        } else {
+            for (Intersection i : danglingIntersections) {
+                if (otherPiece == i.relatedPiece(piece)) {
+                    return true;
+                }
             }
         }
         return false;

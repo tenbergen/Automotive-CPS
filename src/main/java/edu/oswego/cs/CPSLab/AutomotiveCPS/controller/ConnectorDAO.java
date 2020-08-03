@@ -82,7 +82,7 @@ public class ConnectorDAO {
                        
             VehicleDAO vehicle = new VehicleDAO();
             vehicle.setCpsCar(new CPSCar(v));
-            vehicle.setImg("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Vehicle/" +v.getAdvertisement().getModel()+".png");
+            vehicle.setImg(Parameter.PATH_MEDIA+"Vehicle/" +v.getAdvertisement().getModel()+".png");
             
             this.vehicles.add(vehicle);
         }

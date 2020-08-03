@@ -6,8 +6,8 @@
 package edu.oswego.cs.CPSLab.AutomotiveCPS.controller;
 
 import edu.oswego.cs.CPSLab.AutomotiveCPS.gui.Parameter;
-import Utilities.ArrayMap;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.utilities.Customized2DArray;
 import java.util.List;
 
 /**
@@ -16,13 +16,13 @@ import java.util.List;
  */
 public class MapDAO {
     private List<Block> tracks;
-    private ArrayMap array;
+    private Customized2DArray array;
     private String[][] board;
 
     public List<Block> getTracks() {
         return tracks;
     }
-    public ArrayMap getArray() {
+    public Customized2DArray getArray() {
         return array;
     }
     public String[][] getBoard() {
@@ -56,7 +56,7 @@ public class MapDAO {
          */
         boolean positive = true;
         
-        this.array = new ArrayMap();
+        this.array = new Customized2DArray();
         
         for (Block track : this.tracks){
             int pieceId = track.getPieceId();

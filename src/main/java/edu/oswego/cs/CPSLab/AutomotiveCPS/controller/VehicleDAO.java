@@ -217,7 +217,4 @@ public class VehicleDAO {
         }
     }
     
-    public boolean isScanCompeleted(){
-        return this.getCpsCar().isScanFinished();
-    }
 }

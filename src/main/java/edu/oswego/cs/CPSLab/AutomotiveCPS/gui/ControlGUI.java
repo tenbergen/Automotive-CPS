@@ -125,21 +125,53 @@ public class ControlGUI extends Application {
         });       
         vbox_list_vehicles.getChildren().add(lv_vehicles);
         
-        //**************** Button Rescan ****************
-        Button btn_rescan = new Button("Rescan");
+        //**************** Button Disconnect ****************
+        Button btn_disconnect = new Button("Disconnect");
+        btn_disconnect.setId("control-button");
+        btn_disconnect.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                
+                disconnect();
+                
+                //Call Connect stage
+                Stage connectStage = new Stage();
+                ConnectGUI connectGUI = new ConnectGUI();
+                connectGUI.start(connectStage);
+                connectStage.show();
+                    
+                stage.close();
+            }
+        });
+        vbox_list_vehicles.getChildren().add(btn_disconnect);
+        
+        Button btn_rescan = new Button("Rescan Vehicles");
         btn_rescan.setId("control-button");
+        
+        Button btn_scan_track = new Button("Scan Track");
+        btn_scan_track.setId("control-button");
+        //**************** Button Scan Vehicles ****************  
         btn_rescan.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
                 System.out.println("Rescan ...");
-                rescan();
+                Stage dialog = loadingPopup("Rescanning ...");
+                new Thread(){
+                    @Override
+                    public void run(){
+                        rescan(dialog);
+                    }                
+                }.start();
+                
+                if (!vbox_list_vehicles.getChildren().contains(btn_scan_track)){
+                    vbox_list_vehicles.getChildren().add(btn_scan_track);
+                }
+                    
             }
         });
         vbox_list_vehicles.getChildren().add(btn_rescan);
         
-        //**************** Button Scan Track ****************
-        Button btn_scan_track = new Button("Scan Track");
-        btn_scan_track.setId("control-button");
+        //**************** Button Scan Track ****************   
         btn_scan_track.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
@@ -150,6 +182,8 @@ public class ControlGUI extends Application {
                 txt_map.setTextAlignment(TextAlignment.CENTER);
                 txt_map.setId("heading1-text");
                 vbox_map.getChildren().add(txt_map);
+                
+                vbox_list_vehicles.getChildren().remove(btn_scan_track);
                 
                 Stage dialog = loadingPopup("Please wait until scanning is finished");                              
 
@@ -180,29 +214,7 @@ public class ControlGUI extends Application {
             }
         });
         vbox_list_vehicles.getChildren().add(btn_scan_track);
-        
-        
-        
-        //**************** Button Disconnect ****************
-        Button btn_disconnect = new Button("Disconnect");
-        btn_disconnect.setId("control-button");
-        btn_disconnect.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                
-                disconnect();
-                
-                //Call Connect stage
-                Stage connectStage = new Stage();
-                ConnectGUI connectGUI = new ConnectGUI();
-                connectGUI.start(connectStage);
-                connectStage.show();
-                    
-                stage.close();
-            }
-        });
-        vbox_list_vehicles.getChildren().add(btn_disconnect);
-        
+      
         grid.add(vbox_list_vehicles,0,0);
         
         
@@ -625,19 +637,26 @@ public class ControlGUI extends Application {
         }       
     }
     
-    public void rescan(){
+    public void rescan(Stage dialog){
         this.connectorDAO.reconnect();
         this.connectorDAO.scanVehicles();
         this.connectorDAO.updateVehicles();
         
         //GUI
-        txt_vehicle_name.setText("Select a vehicle");
-        iv_vehicle_thumbnail.setImage(null);
-        if(lv_vehicles.getSelectionModel().getSelectedItems()!=null)
-            lv_vehicles.getSelectionModel().clearSelection();
-        lv_vehicles.getItems().removeAll();
-        observable_list_vehicles = FXCollections.observableList(connectorDAO.getVehicles());
-        lv_vehicles.setItems(observable_list_vehicles);
+        Platform.runLater(new Runnable(){
+            public void run(){
+                txt_vehicle_name.setText("Select a vehicle");
+                iv_vehicle_thumbnail.setImage(null);
+                if (lv_vehicles.getSelectionModel().getSelectedItems() != null) {
+                    lv_vehicles.getSelectionModel().clearSelection();
+                }
+                lv_vehicles.getItems().removeAll();
+                observable_list_vehicles = FXCollections.observableList(connectorDAO.getVehicles());
+                lv_vehicles.setItems(observable_list_vehicles);
+                dialog.close();
+            }
+        });
+        
     }
     
     private void adjustSpeed(boolean increase){
@@ -815,7 +834,7 @@ public class ControlGUI extends Application {
             map_GUI.setAlignment(Pos.CENTER);
             int rows = board.length;
             int cols = board[0].length;
-            int size_piece = 300 / rows;
+            int size_piece = 200 / rows;
 
             for (int i = 0; i < rows; i++) {
                 HBox one_row_map = new HBox();

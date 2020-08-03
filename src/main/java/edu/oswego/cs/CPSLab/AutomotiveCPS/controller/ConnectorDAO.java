@@ -105,6 +105,8 @@ public class ConnectorDAO {
             for (Vehicle v : this.scanningVehicles) {
                 String key = ""+v.getAdvertisement().getIdentifier();
                 System.out.print("Get car: "+v.getAdvertisement().getModel());
+                if (v.getAdvertisement().isCharging())
+                    continue;               
                 addVehicle(v);   
             }
         }     
@@ -332,41 +334,6 @@ public class ConnectorDAO {
             }
         };
         name.start();
-        
-        
-        
-        /*while (!scanTrackComplete) {
-            // If scan is done, get notified
-            for (VehicleDAO vehicleDAO : vehicles) {
-                if (vehicleDAO.getCpsCar().scanDone() && vehicleDAO.getCpsCar().getManager() == null) {
-                    for (RoadmapManager rm : managers) {
-                        if (vehicleDAO.getCpsCar().getPieceIDs().equals(rm.getPieceIDs()) && vehicleDAO.getCpsCar().getReverses().equals(rm.getReverses())) {
-                            System.out.println("Same manager...");
-                            vehicleDAO.getCpsCar().setRoadmapMannager(rm);
-                        }
-                    }
-                    if (vehicleDAO.getCpsCar().getManager() == null) {
-                        System.out.println("New manager...");
-                        RoadmapManager rm = new RoadmapManager(vehicleDAO.getCpsCar().getMap(), vehicleDAO.getCpsCar().getPieceIDs(), vehicleDAO.getCpsCar().getReverses());
-                        managers.add(rm);
-                        rm.setID(managers.indexOf(rm));
-                        vehicleDAO.getCpsCar().setRoadmapMannager(rm);
-                    }
-                    scanTrackComplete = true;
-                } else {
-                    scanTrackComplete = false;
-                }
-            }
-            try {
-                Thread.sleep(100);
-            } catch (InterruptedException ex) {
-                Logger.getLogger(ConnectorDAO.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        }
-        System.out.println("GUI - SCAN DONE");
-        System.out.println("GUI - Roadmap Manager: " + managers.toString());
-        System.out.println("GUI - set track");
-        setTrack();*/
     }
 
     /**

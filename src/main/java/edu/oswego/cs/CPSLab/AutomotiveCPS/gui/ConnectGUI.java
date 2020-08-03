@@ -104,42 +104,26 @@ public class ConnectGUI extends Application {
                 
                 //Launching connector
                 System.out.println("Launching connector...");
-
-                Stage dialog = loadingPopup("Please wait until connecting is finished");
-                try {
-                    Thread.sleep(500);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
-                }
+                
                 System.out.println(ip + "-" + port);
                 
-                new Thread() {
-                    @Override
-                    public void run() {
-                        try {
-                            connector = new ConnectorDAO(ip, port);
-                        } catch (IOException ex) {
-                            announcement.setText("Connect fail, please try again");
-                            Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
-                        }
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {
-                                dialog.close();
-                                Stage controlStage = new Stage();
-                                ControlGUI controlGUI = new ControlGUI();
-                                controlGUI.setConnectorDAO(connector);
-                                controlGUI.start(controlStage);
-                                controlStage.show();
+                try {
+                    connector = new ConnectorDAO(ip, port);
+                } catch (IOException ex) {
+                    announcement.setText("Connect fail, please try again");
+                    Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                announcement.setText("Connecting, please wait for a minute");
+                Stage controlStage = new Stage();
+                ControlGUI controlGUI = new ControlGUI();
+                controlGUI.setConnectorDAO(connector);
+                controlGUI.start(controlStage);
 
-                                //Clean before close
-                                connector.getAnkiConnector().close();
-                                stage.close();
-                            }
-                        });
-                    }
-                }.start();
-               
+                //Clean before close
+                controlStage.show();
+                connector.getAnkiConnector().close();
+                stage.close();
+
                 
             }
         });
@@ -172,30 +156,4 @@ public class ConnectGUI extends Application {
         System.setProperty("java.net.preferIPv4Stack" , "true");
         launch(args);
     }
-    
-    public Stage loadingPopup(String message){
-        final Stage dialog = new Stage();
-        dialog.initStyle(StageStyle.UNDECORATED);
-        dialog.initModality(Modality.APPLICATION_MODAL);
-        dialog.initOwner(this.stage);
-        
-        VBox dialogVbox = new VBox(Parameter.BOX_VGAP);
-        dialogVbox.setAlignment(Pos.CENTER);
-        dialogVbox.setId("message-vbox");
-        
-        Text txt_message = new Text(message);
-        txt_message.setId("message-text");
-        dialogVbox.getChildren().add(txt_message);
-        
-        /*final ProgressIndicator pi = new ProgressIndicator();
-        pi.setProgress(-1.0f);
-        dialogVbox.getChildren().add(pi);*/
-        
-        Scene dialogScene = new Scene(dialogVbox, Parameter.WIDTH_SCENE_POPUP, Parameter.HEIGHT_SCENE_POPUP);
-        dialogScene.getStylesheets().add(ConnectGUI.class.getResource("design-style.css").toExternalForm());
-        dialog.setScene(dialogScene);
-        dialog.show();
-        return dialog;
-    }
-   
 }

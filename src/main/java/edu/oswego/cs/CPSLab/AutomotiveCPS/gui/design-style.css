@@ -151,9 +151,14 @@ and open the template in the editor.
     -fx-font-weight: bold;
     -fx-background-color: #ff9600;
     -fx-effect: innershadow( three-pass-box , rgb(204, 221, 255) , 10,0,0,1);
-    -fx-pref-width: 100px;
+    -fx-pref-width: 130px;
 }
 
 #scan-vehicles-grid{
     -fx-background-color: black;
+}
+
+#road-piece-image-view:hover{
+    -fx-background-color: white;
+    -fx-effect: innershadow(three-pass-box, red, 10, 10, 0, 0);
 }

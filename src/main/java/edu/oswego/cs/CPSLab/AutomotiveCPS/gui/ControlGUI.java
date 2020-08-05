@@ -8,14 +8,14 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS.gui;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.ConnectorDAO;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.MapDAO;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.VehicleDAO;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -30,6 +30,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.control.TreeView;
@@ -38,15 +39,16 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 /**
  *
@@ -57,11 +59,12 @@ public class ControlGUI extends Application {
     private Stage stage;
     private ConnectorDAO connectorDAO;
       
-    //******** Map ********
-    private List<MapDAO> maps = new ArrayList<>();
-    List<RoadmapManager> roadmapManagers = new ArrayList<>();
-    private boolean scanTrackComplete = false;
+    //******** Map ********x
     private VBox vbox_map;
+    private HashMap<ImageView,Block> map_iv_block = new HashMap<>();
+    private boolean join_intersection_flag = false;
+    private Block temp_intersection;
+    private RoadmapManager temp_roadmap_manager;
     
     //******** Selected Car ********
     private UpdateRealTimeData updateRealTimeData;
@@ -99,7 +102,7 @@ public class ControlGUI extends Application {
         grid.setPadding(new Insets(Parameter.SIZE_PADDING,Parameter.SIZE_PADDING,Parameter.SIZE_PADDING,Parameter.SIZE_PADDING));
         grid.setGridLinesVisible(true);
         
-        //this.connectorDAO.scanVehicles();
+        this.connectorDAO.scanVehicles();
         this.connectorDAO.updateVehicles();
         
         //***************************************************
@@ -130,40 +133,13 @@ public class ControlGUI extends Application {
         });       
         vbox_list_vehicles.getChildren().add(lv_vehicles);
         
-        //**************** Button Rescan ****************
-        Button btn_rescan = new Button("Rescan");
-        btn_rescan.setId("control-button");
-        btn_rescan.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                System.out.println("Rescan ...");
-                rescan();
-            }
-        });
-        vbox_list_vehicles.getChildren().add(btn_rescan);
-        
-        //**************** Button Scan Track ****************
-        Button btn_scan_track = new Button("Scan Track");
-        btn_scan_track.setId("control-button");
-        btn_scan_track.setOnAction(new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent e) {
-                System.out.println("Scan Track ...");
-                drawTrack();
-                //ScanTrackThread scanTrackThread = new ScanTrackThread();
-                //scanTrackThread.start();
-            }
-        });
-        vbox_list_vehicles.getChildren().add(btn_scan_track);
-        
-        
-        
         //**************** Button Disconnect ****************
         Button btn_disconnect = new Button("Disconnect");
         btn_disconnect.setId("control-button");
         btn_disconnect.setOnAction(new EventHandler<ActionEvent>() {
             @Override
             public void handle(ActionEvent e) {
+                
                 disconnect();
                 
                 //Call Connect stage
@@ -177,6 +153,76 @@ public class ControlGUI extends Application {
         });
         vbox_list_vehicles.getChildren().add(btn_disconnect);
         
+        Button btn_rescan = new Button("Rescan Vehicles");
+        btn_rescan.setId("control-button");
+        
+        Button btn_scan_track = new Button("Scan Track");
+        btn_scan_track.setId("control-button");
+        //**************** Button Scan Vehicles ****************  
+        btn_rescan.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                System.out.println("Rescan ...");
+                Stage dialog = loadingPopup("Rescanning ...");
+                new Thread(){
+                    @Override
+                    public void run(){
+                        rescan(dialog);
+                    }                
+                }.start();
+                
+                if (!vbox_list_vehicles.getChildren().contains(btn_scan_track)){
+                    vbox_list_vehicles.getChildren().add(btn_scan_track);
+                }
+                    
+            }
+        });
+        vbox_list_vehicles.getChildren().add(btn_rescan);
+        
+        //**************** Button Scan Track ****************   
+        btn_scan_track.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                System.out.println("GUI - Scan Track ...");
+                vbox_map.getChildren().clear();
+                
+                Text txt_map = new Text("Map");
+                txt_map.setTextAlignment(TextAlignment.CENTER);
+                txt_map.setId("heading1-text");
+                vbox_map.getChildren().add(txt_map);
+                
+                vbox_list_vehicles.getChildren().remove(btn_scan_track);
+                
+                Stage dialog = loadingPopup("Please wait until scanning is finished");                              
+
+                Thread name = new Thread() {
+                    @Override
+                    public void run() {
+                        connectorDAO.scanTrack();
+                        while(!connectorDAO.isScanTrackComplete()){
+                            try {
+                                sleep(100);
+                            } catch (InterruptedException ex) {
+                                Logger.getLogger(ControlGUI.class.getName()).log(Level.SEVERE, null, ex);
+                            }
+                        }
+                        System.out.println("GUI - Thread is DONE");
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {                             
+                                drawTrack();
+                                dialog.close();
+                            }
+                        });
+
+                    }
+                };
+                name.start();
+                
+            }
+        });
+        vbox_list_vehicles.getChildren().add(btn_scan_track);
+      
         grid.add(vbox_list_vehicles,0,0);
         
         
@@ -599,19 +645,26 @@ public class ControlGUI extends Application {
         }       
     }
     
-    public void rescan(){
+    public void rescan(Stage dialog){
         this.connectorDAO.reconnect();
         this.connectorDAO.scanVehicles();
         this.connectorDAO.updateVehicles();
         
         //GUI
-        txt_vehicle_name.setText("Select a vehicle");
-        iv_vehicle_thumbnail.setImage(null);
-        if(lv_vehicles.getSelectionModel().getSelectedItems()!=null)
-            lv_vehicles.getSelectionModel().clearSelection();
-        lv_vehicles.getItems().removeAll();
-        observable_list_vehicles = FXCollections.observableList(connectorDAO.getVehicles());
-        lv_vehicles.setItems(observable_list_vehicles);
+        Platform.runLater(new Runnable(){
+            public void run(){
+                txt_vehicle_name.setText("Select a vehicle");
+                iv_vehicle_thumbnail.setImage(null);
+                if (lv_vehicles.getSelectionModel().getSelectedItems() != null) {
+                    lv_vehicles.getSelectionModel().clearSelection();
+                }
+                lv_vehicles.getItems().removeAll();
+                observable_list_vehicles = FXCollections.observableList(connectorDAO.getVehicles());
+                lv_vehicles.setItems(observable_list_vehicles);
+                dialog.close();
+            }
+        });
+        
     }
     
     private void adjustSpeed(boolean increase){
@@ -677,7 +730,7 @@ public class ControlGUI extends Application {
     }
     
     
-    public void showPopup(String message){
+    public Stage showPopup(String message){
         final Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(this.stage);
@@ -703,6 +756,32 @@ public class ControlGUI extends Application {
         dialogScene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
         dialog.setScene(dialogScene);
         dialog.show();
+        return dialog;
+    }
+    
+    public Stage loadingPopup(String message){
+        final Stage dialog = new Stage();
+        dialog.initStyle(StageStyle.UNDECORATED);
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(this.stage);
+        
+        VBox dialogVbox = new VBox(Parameter.BOX_VGAP);
+        dialogVbox.setAlignment(Pos.CENTER);
+        dialogVbox.setId("message-vbox");
+        
+        Text txt_message = new Text(message);
+        txt_message.setId("message-text");
+        dialogVbox.getChildren().add(txt_message);
+        
+        final ProgressIndicator pi = new ProgressIndicator();
+        pi.setProgress(-1.0f);
+        dialogVbox.getChildren().add(pi);
+        
+        Scene dialogScene = new Scene(dialogVbox, Parameter.WIDTH_SCENE_POPUP, Parameter.HEIGHT_SCENE_POPUP);
+        dialogScene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
+        dialog.setScene(dialogScene);
+        dialog.show();
+        return dialog;
     }
     
     class UpdateRealTimeData extends Thread{
@@ -746,150 +825,150 @@ public class ControlGUI extends Application {
         catch(Exception e){
             e.printStackTrace();
         }
-    }
-    
-    public void scanTrack(){
-        int n = connectorDAO.getVehicles().size();
-        Boolean[] check = new Boolean[n];
-        boolean finished = false;
-        for (int i=0;i<n;i++){
-            check[i] = false;
-        }
-        while(!finished){
-            for(int i=0;i<n;i++){
-                if(check[i])
-                    continue;
-                CPSCar c = connectorDAO.getVehicles().get(i).getCpsCar();
-                System.out.println(c.getAddress() + " Scanning... "+i);
-                if (c.scanDone()) {
-                    finished = true;
-                    check[i] = true;
-                    System.out.println(c.getAddress() + ": Scan Done... ");
-                    for (RoadmapManager rm : roadmapManagers) {
-                        if (c.getMap().equals(rm.getMap())) {
-                            System.out.println("Same manager...");
-                            c.setRoadmapMannager(rm);
-                        }
-                    }
-                    if (c.getManager() == null) {
-                        System.out.println("New manager...");
-                        RoadmapManager rm = new RoadmapManager(c.getMap(), c.getReverse(), c.getPieceIDs(), c.getReverses());
-                        roadmapManagers.add(rm);
-                        c.setRoadmapMannager(rm);
-                        rm.setID(roadmapManagers.indexOf(rm));
-                    }
-                }
-                else
-                    finished = false;
-                }
-                try {
-                    Thread.sleep(100);
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ControlGUI.class.getName()).log(Level.SEVERE, null, ex);
-                }
-            }
-            
-            //All vehicles are completed
-            System.out.println("GUI - SCAN FULLY COMPLETED");
-            System.out.println("GUI - RoadmapManager Size "+roadmapManagers.size());
-            this.scanTrackComplete = true;
-    }
-    
-    public void setTrack(List<Block> track){
-        MapDAO map = new MapDAO();
-        map.setTracks(track);
-        map.printBoard();
-        maps.add(map);
-            
-            
-        //mapDAO = new MapDAO();
-        //mapDAO.setTracks(connectorDAO.getVehicles().get(0).getCpsCar().getMap().getTrack());
-        //mapDAO.printBoard();
-        this.drawTrack();
-    }
+    }   
     
     public void drawTrack(){
-        System.out.println("[GUI] Draw Track");
-        
         Text txt_scan = new Text("This is the map");
         txt_scan.setTextAlignment(TextAlignment.CENTER);
         txt_scan.setWrappingWidth(400);
         txt_scan.setId("heading1-text");
-        vbox_map.getChildren().add(txt_scan);   
+        vbox_map.getChildren().add(txt_scan); 
         
-        String[][] dummy = this.dummyMap();
-        
-        for(int k=0;k<2;k++){
+        System.out.println("GUI - Draw Track");
+        List<MapDAO> maps = this.connectorDAO.getMaps();
+        for (MapDAO map : maps){
+            String[][] board = map.getBoard();
             VBox map_GUI = new VBox();
             map_GUI.setAlignment(Pos.CENTER);
-            int rows = dummy.length;
-            int cols = dummy[0].length;
-            int size_piece = 300/rows;
+            int rows = board.length;
+            int cols = board[0].length;
+            int size_piece = 200 / rows;
 
-            for (int i=0;i<rows;i++){
+            for (int i = 0; i < rows; i++) {
                 HBox one_row_map = new HBox();
                 one_row_map.setAlignment(Pos.CENTER);
-                for (int j=0;j<cols;j++){
+                for (int j = 0; j < cols; j++) {
 
-                    if (dummy[i][j]==null)
-                        dummy[i][j] = "null";
-                    System.out.println(dummy[i][j]);
-                    ImageView iv_road_piece = new ImageView(new Image(Parameter.PATH_MEDIA+"Track/"+dummy[i][j]+".png"));
-                    //ImageView iv_road_piece = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Track/arrow-up.png"));
+                    if (board[i][j] == null) {
+                        board[i][j] = "null";
+                    }
+                    ImageView iv_road_piece = new ImageView(new Image(Parameter.PATH_MEDIA + "Track/" + board[i][j] + ".png"));
+                    //ImageView iv_road_piece = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Track/arrow-up.png"));                   
                     iv_road_piece.setFitHeight(size_piece);
                     iv_road_piece.setPreserveRatio(true);
                     iv_road_piece.setSmooth(true);
                     iv_road_piece.setCache(true);
+                    if (board[i][j].equals("IN")){
+                        initializeIntersectionPiece(iv_road_piece,map,i,j);                      
+                    }                 
                     one_row_map.getChildren().add(iv_road_piece);
                 }
                 map_GUI.getChildren().add(one_row_map);
             }
-            vbox_map.getChildren().add(map_GUI); 
+            vbox_map.getChildren().add(map_GUI);
         }
-        System.out.println("GUI - Draw Done");
+        System.out.println("GUI - Draw Done");   
+    }
+    
+    public void initializeIntersectionPiece(ImageView iv_road_piece,MapDAO map,int i,int j){
+        iv_road_piece.setId("road-piece-image-view");
+        this.map_iv_block.put(iv_road_piece, map.getBlock(i, j));
+        iv_road_piece.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                try {
+                    Block block = map_iv_block.get(iv_road_piece);
+                    RoadmapManager roadmapManager = connectorDAO.getRoadmapManager(block);
+                    System.out.println("Intersection: " + block.toString());
+                    System.out.println("RoadmapManager: " + roadmapManager.toString());
+                    
+                    if(join_intersection_flag){
+                        handleFirstJointIntersection(block,roadmapManager);
+                    }
+                    else{
+                        handleSecondJointIntersection(block,roadmapManager);
+                    }
+                    
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+    
+    public void handleFirstJointIntersection(Block block,RoadmapManager roadmapManager){
+        final Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(this.stage);
+        
+        VBox dialogVbox = new VBox(Parameter.BOX_VGAP);
+        dialogVbox.setAlignment(Pos.CENTER);
+        dialogVbox.setId("message-vbox");
+        
+        Text txt_message = new Text("Do you want to join intersections?");
+        txt_message.setId("message-text");
+        dialogVbox.getChildren().add(txt_message);
+        
+        HBox hbox_button = new HBox();
+        hbox_button.setAlignment(Pos.CENTER);
+        hbox_button.setSpacing(Parameter.BOX_HGAP);
+        
+        Button btn_yes = new Button("Yes");
+        btn_yes.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                join_intersection_flag = true;
+                temp_intersection = block;
+                temp_roadmap_manager = roadmapManager;
+                dialog.close();
+                showPopup("Choose an intersection from another map to join");
+            }
+        });
+        hbox_button.getChildren().add(btn_yes);
+        
+        Button btn_no = new Button("No");
+        btn_no.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+               dialog.close();
+            }
+        });
+        hbox_button.getChildren().add(btn_no);
+        dialogVbox.getChildren().add(hbox_button);      
+        
+        Scene dialogScene = new Scene(dialogVbox, Parameter.WIDTH_SCENE_POPUP, Parameter.HEIGHT_SCENE_POPUP);
+        dialogScene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
+        dialog.setScene(dialogScene);
+        dialog.show();
+    }
+    
+    public void handleSecondJointIntersection(Block block,RoadmapManager roadmapManager){
+        if (!join_intersection_flag || temp_intersection == null || temp_roadmap_manager == null){
+            resetJoinIntersection();
+            return;
+        }
+        if (block == temp_intersection){
+            resetJoinIntersection();
+            showPopup("Cannot join the same intersection");
+            return;
+        }
+        if (roadmapManager == temp_roadmap_manager){
+            resetJoinIntersection();
+            showPopup("Cannot join intersections in the same map");
+            return;
+        }
+        System.out.println("--- Joining two intersections ---");
+        System.out.println("Intersection 1: "+temp_intersection.toString());
+        System.out.println("RoadmapManager 1: "+temp_roadmap_manager.toString());
+        System.out.println("Intersection 2: "+block.toString());
+        System.out.println("RoadmapManager 2: "+roadmapManager.toString());
+        resetJoinIntersection();
         
     }
     
-    public String[][] dummyMap(){
-        //Create Board
-        //int rows = 4;
-        //int cols = 4;
-        //String[][] board = new String[rows][cols];  
-        String[][] board = {
-            {"null",    "SE",   "SW",   "null", "null"},
-            {"null",    "SV",   "NE",   "SW",   "null"},
-            {"null",    "NE",   "SH",   "IN",   "SW",},
-            {"SE",      "IN",   "SH",   "NW",   "SV"},
-            {"NE",      "IN",   "SH",   "SF",   "NW"}
-        };
-        
-        /*board[0][0] = "SE";
-        board[0][1] = "IN";
-        board[0][2] = "IN";
-        board[0][3] = "SW";
-        
-        board[1][0] = "SV";
-        //board[1][1] = null;
-        //board[1][2] = null;
-        board[1][3] = "SV";
-        
-        board[2][0] = "SV";
-        //board[2][1] = null;
-        //board[2][2] = null;
-        board[2][3] = "SV";
-        
-        board[3][0] = "NE";
-        board[3][1] = "SH";
-        board[3][2] = "SF";
-        board[3][3] = "NW";*/
-        
-        return board;
+    public void resetJoinIntersection(){
+        join_intersection_flag = false;
+        temp_intersection = null;
+        temp_roadmap_manager = null;
     }
-    
-    class ScanTrackThread extends Thread{
-        @Override
-        public void run(){
-            scanTrack();
-        }
-    } 
 }

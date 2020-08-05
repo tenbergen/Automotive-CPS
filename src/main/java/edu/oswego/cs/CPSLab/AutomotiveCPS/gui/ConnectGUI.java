@@ -13,6 +13,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javafx.application.Application;
 import static javafx.application.Application.launch;
+import javafx.application.Platform;
 
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -21,12 +22,15 @@ import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.TextField;
-import javafx.scene.layout.Background;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.stage.StageStyle;
 
 /**
  *
@@ -34,11 +38,15 @@ import javafx.stage.Stage;
  */
 public class ConnectGUI extends Application {
     
-    public GridPane grid;
+    private Stage stage;
+    private GridPane grid;
+    int port;
+    String ip;
+    ConnectorDAO connector;
     
     @Override
-    public void start(Stage primaryStage) {
-      
+    public void start(Stage stage) {
+        this.stage = stage;
         grid = new GridPane();
         grid.setId("connection-grid");
         grid.setAlignment(Pos.CENTER);
@@ -83,8 +91,7 @@ public class ConnectGUI extends Application {
  
             @Override
             public void handle(ActionEvent e) {
-                String ip = txt_ip_address.getText();
-                int port=5000;
+                ip = txt_ip_address.getText();
                 
                 //Handle port input
                 try{
@@ -96,45 +103,28 @@ public class ConnectGUI extends Application {
                 }       
                 
                 //Launching connector
+                System.out.println("Launching connector...");
+                
+                System.out.println(ip + "-" + port);
+                
                 try {
-                    System.out.println("Launching connector...");
-                    /*final ProgressIndicator pi = new ProgressIndicator();
-                    pi.setProgress(-1.0f);
-                    grid.add(pi, 1, 7);*/
-                    
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            try {
-                                System.out.print(".");
-                                Thread.sleep(100);
-                                
-                            } 
-                            catch (InterruptedException e) {
-                                e.printStackTrace();
-                            }
-                        }
-                    }).start();
-                    
-                    System.out.println(ip+"-"+port);
-                    ConnectorDAO connector = new ConnectorDAO(ip,port); 
-                    
-                    Stage controlStage = new Stage();
-                    ControlGUI controlGUI = new ControlGUI();
-                    controlGUI.setConnectorDAO(connector);
-                    controlGUI.start(controlStage);
-                    controlStage.show();
-                    
-                    //Clean before close
-                    connector.getAnkiConnector().close();
-                    primaryStage.close();
-                    
+                    connector = new ConnectorDAO(ip, port);
                 } catch (IOException ex) {
                     announcement.setText("Connect fail, please try again");
                     Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
-                } catch (Exception ex) {
-                    Logger.getLogger(ConnectGUI.class.getName()).log(Level.SEVERE, null, ex);
                 }
+                announcement.setText("Connecting, please wait for a minute");
+                Stage controlStage = new Stage();
+                ControlGUI controlGUI = new ControlGUI();
+                controlGUI.setConnectorDAO(connector);
+                controlGUI.start(controlStage);
+
+                //Clean before close
+                controlStage.show();
+                connector.getAnkiConnector().close();
+                stage.close();
+
+                
             }
         });
         
@@ -146,10 +136,10 @@ public class ConnectGUI extends Application {
         URL url = ConnectGUI.class.getResource(".");
         System.out.println("Value = " + url);
         
-        primaryStage.setScene(scene);
-        primaryStage.setResizable(false);
-        primaryStage.setTitle("CPS Connection");
-        primaryStage.show();
+        stage.setScene(scene);
+        stage.setResizable(false);
+        stage.setTitle("CPS Connection");
+        stage.show();
     }
     
     public GridPane getGrid(){
@@ -165,15 +155,5 @@ public class ConnectGUI extends Application {
     public static void main(String[] args) {
         System.setProperty("java.net.preferIPv4Stack" , "true");
         launch(args);
-    }
-    
-    public class LoadingThread extends Thread {
-
-        @Override
-        public void run(){
-           System.out.println("MyThread running");
-           //Progress bar 
-           
-        }
     }
 }

@@ -24,8 +24,10 @@ public class FourWayIntersection extends Behavior {
         String name = car.getAddress();
         if (queue.element() == name) {
             try {
+                System.out.println("Wait for 3 seconds... ");
                 Thread.sleep(3000);
             } catch (InterruptedException ex) {
+                ex.printStackTrace();
                 Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
             }
             car.sendMessage(new SetSpeedMessage(400, 100));

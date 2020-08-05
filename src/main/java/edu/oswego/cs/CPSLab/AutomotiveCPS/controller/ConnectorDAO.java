@@ -8,6 +8,7 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS.controller;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.gui.Parameter;
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.Vehicle;
+import de.adesso.anki.messages.SetSpeedMessage;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
@@ -297,23 +298,30 @@ public class ConnectorDAO {
             @Override
             public void run() {
                 scanningTrack = true;
+                for (VehicleDAO vehicleDAO : vehicles){
+                    vehicleDAO.getCpsCar().scanTrack();
+                }
                 while (scanningTrack) {
                     // If scan is done, get notified
                     for (VehicleDAO vehicleDAO : vehicles) {
                         if (vehicleDAO.getCpsCar().scanDone() && vehicleDAO.getCpsCar().getManager() == null) {
                             for (RoadmapManager rm : managers) {
-                                if (vehicleDAO.getCpsCar().getPieceIDs().equals(rm.getPieceIDs()) && vehicleDAO.getCpsCar().getReverses().equals(rm.getReverses())) {
-                                    System.out.println("Same manager...");
-                                    vehicleDAO.getCpsCar().setRoadmapMannager(rm);
-                                }
-                            }
-                            if (vehicleDAO.getCpsCar().getManager() == null) {
-                                System.out.println("New manager...");
-                                RoadmapManager rm = new RoadmapManager(vehicleDAO.getCpsCar().getMap(), vehicleDAO.getCpsCar().getPieceIDs(), vehicleDAO.getCpsCar().getReverses());
-                                managers.add(rm);
-                                rm.setID(managers.indexOf(rm));
+//                            System.out.println(c.getMap().toString());
+//                            System.out.println(rm.getMap().toString());
+                            if (rm.compare(vehicleDAO.getCpsCar().getMap())) {
+                                System.out.println("Same manager...");
                                 vehicleDAO.getCpsCar().setRoadmapMannager(rm);
                             }
+                        }
+                        if (vehicleDAO.getCpsCar().getManager() == null) {
+                            System.out.println("New manager...");
+//                            System.out.parintln(c.getMap());
+                            RoadmapManager rm = new RoadmapManager(vehicleDAO.getCpsCar().getMap(), vehicleDAO.getCpsCar().getPieceIDs(), vehicleDAO.getCpsCar().getReverses());
+                            managers.add(rm);
+                            rm.setID(managers.indexOf(rm));
+                            vehicleDAO.getCpsCar().setRoadmapMannager(rm);
+                        }
+                        vehicleDAO.getCpsCar().sendMessage(new SetSpeedMessage(400, 100));
                             scanningTrack = false;
                         } else {
                             scanningTrack = true;

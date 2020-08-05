@@ -5,10 +5,15 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.Vehicle;
+import de.adesso.anki.messages.SdkModeMessage;
+import de.adesso.anki.messages.SetSpeedMessage;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
 
 /**
  *
@@ -25,18 +30,19 @@ public class CPSTestProgram {
         System.out.println("...looking for cars...");
         List<Vehicle> vehicles = anki.findVehicles(); // Add the CPSCar class to AnkiConnector?
         List<CPSCar> cars = new ArrayList<>();
-
+        
         if (vehicles.isEmpty()) {
             System.out.println(" NO CARS FOUND. I guess that means we're done.");
-
+            
         } else {
             System.out.println(vehicles.toString());
             for (Vehicle v : vehicles) {
                 CPSCar c = new CPSCar(v);
                 cars.add(c);
+                c.scanTrack();
             }
-          
-            // Roadmap Manager(s)  
+
+            // Roadmap Manager(s)
             List<RoadmapManager> managers = new ArrayList<>();
             
             while (true) {
@@ -44,18 +50,22 @@ public class CPSTestProgram {
                 for (CPSCar c : cars) {
                     if (c.scanDone() && c.getManager() == null) {
                         for (RoadmapManager rm : managers) {
-                            if (c.getMap().equals(rm.getMap())) {
+//                            System.out.println(c.getMap().toString());
+//                            System.out.println(rm.getMap().toString());
+                            if (rm.compare(c.getMap())) {
                                 System.out.println("Same manager...");
                                 c.setRoadmapMannager(rm);
                             }
                         }
                         if (c.getManager() == null) {
                             System.out.println("New manager...");
+//                            System.out.println(c.getMap());
                             RoadmapManager rm = new RoadmapManager(c.getMap(), c.getPieceIDs(), c.getReverses());
                             managers.add(rm);
                             rm.setID(managers.indexOf(rm));
                             c.setRoadmapMannager(rm);
                         }
+                        c.sendMessage(new SetSpeedMessage(400, 100));
                     }
                 }
                 Thread.sleep(100);

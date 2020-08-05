@@ -15,6 +15,8 @@ import de.adesso.anki.roadmap.roadpieces.StraightRoadpiece;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 /**
  *
@@ -23,8 +25,6 @@ import java.util.List;
 public class RoadmapManager {
 
     private Roadmap map;
-    private ArrayList<Integer> pieceIDs;
-    private ArrayList<Boolean> reverses;
     private List<Block> track;
     private List<Intersection> intersections;
     private List<Intersection> danglingIntersections;
@@ -33,43 +33,47 @@ public class RoadmapManager {
 
     public RoadmapManager(Roadmap map, ArrayList<Integer> pieceIDs, ArrayList<Boolean> reverses) {
         this.map = map;
-        this.pieceIDs = pieceIDs;
-        this.reverses = reverses;
         track = new ArrayList<Block>();
         intersections = new ArrayList<Intersection>();
         danglingIntersections = new ArrayList<Intersection>();
-        generateTrack();
+        generateTrack(pieceIDs, reverses);
     }
 
     public Roadmap getMap() {
         return map;
     }
-
-    public ArrayList<Integer> getPieceIDs() {
-        return pieceIDs;
+    
+    public boolean compare(Roadmap r) {
+//        Roadmap p = map;
+        if (map.
+                equals(
+                        r)) {
+            return true;
+        }
+        return false;
     }
 
-    public ArrayList<Boolean> getReverses() {
-        return reverses;
-    }
-
-    private void generateTrack() {
+    private void generateTrack(ArrayList<Integer> pieceIDs, ArrayList<Boolean> reverses) {
         List<Roadpiece> pieces = map.toList();
 
         for (int i = 0; i < pieces.size(); i++) {
             track.add(new Block(pieceIDs.get(i), reverses.get(i)));
             track.get(i).assignPiece(pieces.get(i));
         }
+
         for (int x = 0; x < track.size(); x++) {
             track.get(x).assignSection(track.get(x).getPiece().getSectionByLocation(0, false));
         }
+
         track.get(0).getPiece().setPosition(Position.at(0, 0));
         for (int x = 0; x < track.size() - 1; x++) {
             track.get(x).getSection().connect(track.get(x + 1).getSection());
         }
-        track.get(track.size() - 1).getSection().connect(track.get(0).getSection());
 
+        track.get(track.size() - 1).getSection().connect(track.get(0).getSection());
+        
         generateIntersections();
+        
         for (Intersection i : intersections) {
             System.out.println(i.toString());
         }

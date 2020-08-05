@@ -12,6 +12,7 @@ import de.adesso.anki.messages.SetSpeedMessage;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager.Intersection;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -311,6 +312,9 @@ public class ConnectorDAO {
                             if (rm.compare(vehicleDAO.getCpsCar().getMap())) {
                                 System.out.println("Same manager...");
                                 vehicleDAO.getCpsCar().setRoadmapMannager(rm);
+                                if (vehicleDAO.getCpsCar().getManager() != null) {
+                                    System.out.println("Done");
+                                }
                             }
                         }
                         if (vehicleDAO.getCpsCar().getManager() == null) {
@@ -320,6 +324,9 @@ public class ConnectorDAO {
                             managers.add(rm);
                             rm.setID(managers.indexOf(rm));
                             vehicleDAO.getCpsCar().setRoadmapMannager(rm);
+                            if (vehicleDAO.getCpsCar().getManager() != null) {
+                                    System.out.println("Done");
+                            }
                         }
                         vehicleDAO.getCpsCar().sendMessage(new SetSpeedMessage(400, 100));
                             scanningTrack = false;
@@ -372,5 +379,19 @@ public class ConnectorDAO {
         return this.managers.get(index);
     }
     
+    public void joinIntersection(Block block1,RoadmapManager roadmapManager1,Block block2,RoadmapManager roadmapManager2){
+        int index1 = roadmapManager1.getTrack().indexOf(block1);
+        int index2 = roadmapManager2.getTrack().indexOf(block2);
+        
+        Intersection intersection1 = roadmapManager1.getDanglingIntersection(index1);
+        Intersection intersection2 = roadmapManager2.getDanglingIntersection(index2);
+        
+        intersection1.assignIntersection(index2);
+        intersection2.assignIntersection(index1);
+        
+        System.out.println("ConnectorDAO.joinIntersection:");
+        System.out.println(intersection1.toString());
+        System.out.println(intersection2.toString());
+    }
     
 }

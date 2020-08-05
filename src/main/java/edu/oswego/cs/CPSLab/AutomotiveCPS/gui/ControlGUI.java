@@ -10,6 +10,8 @@ import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.MapDAO;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.VehicleDAO;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
+import static java.lang.Thread.sleep;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
@@ -65,6 +67,9 @@ public class ControlGUI extends Application {
     private boolean join_intersection_flag = false;
     private Block temp_intersection;
     private RoadmapManager temp_roadmap_manager;
+    private ImageView temp_iv_intersection;
+    private List<ImageView> list_iv_intersection = new ArrayList<>();   
+    private String[] join_intersection_colors = {"yellow", "green", "blue"};
     
     //******** Selected Car ********
     private UpdateRealTimeData updateRealTimeData;
@@ -222,7 +227,7 @@ public class ControlGUI extends Application {
             }
         });
         vbox_list_vehicles.getChildren().add(btn_scan_track);
-      
+ 
         grid.add(vbox_list_vehicles,0,0);
         
         
@@ -591,6 +596,8 @@ public class ControlGUI extends Application {
         stage.setScene(scene);
         stage.setTitle("CPS Control");
         stage.show();
+        
+        showPopup("You need to scan track first");
     }
     
     public void setConnectorDAO(ConnectorDAO connectorDAO){
@@ -882,11 +889,11 @@ public class ControlGUI extends Application {
                     System.out.println("Intersection: " + block.toString());
                     System.out.println("RoadmapManager: " + roadmapManager.toString());
                     
-                    if(join_intersection_flag){
-                        handleFirstJointIntersection(block,roadmapManager);
+                    if(!join_intersection_flag){
+                        handleFirstJointIntersection(block,roadmapManager,iv_road_piece);
                     }
                     else{
-                        handleSecondJointIntersection(block,roadmapManager);
+                        handleSecondJointIntersection(block,roadmapManager,iv_road_piece);
                     }
                     
                 } catch (Exception e) {
@@ -896,7 +903,12 @@ public class ControlGUI extends Application {
         });
     }
     
-    public void handleFirstJointIntersection(Block block,RoadmapManager roadmapManager){
+    public void handleFirstJointIntersection(Block block,RoadmapManager roadmapManager,ImageView iv_road_piece){
+        if (list_iv_intersection.contains(iv_road_piece)){
+            showPopup("The intersection has already been joint");
+            return;
+        }
+        
         final Stage dialog = new Stage();
         dialog.initModality(Modality.APPLICATION_MODAL);
         dialog.initOwner(this.stage);
@@ -920,8 +932,9 @@ public class ControlGUI extends Application {
                 join_intersection_flag = true;
                 temp_intersection = block;
                 temp_roadmap_manager = roadmapManager;
+                temp_iv_intersection = iv_road_piece;
+                temp_iv_intersection.setStyle("-fx-effect: innershadow(three-pass-box, "+join_intersection_colors[list_iv_intersection.size()/2]+", 10, 10, 0, 0);");             
                 dialog.close();
-                showPopup("Choose an intersection from another map to join");
             }
         });
         hbox_button.getChildren().add(btn_yes);
@@ -942,19 +955,24 @@ public class ControlGUI extends Application {
         dialog.show();
     }
     
-    public void handleSecondJointIntersection(Block block,RoadmapManager roadmapManager){
+    public void handleSecondJointIntersection(Block block,RoadmapManager roadmapManager,ImageView iv_road_piece){
         if (!join_intersection_flag || temp_intersection == null || temp_roadmap_manager == null){
-            resetJoinIntersection();
+            resetTempIntersection(false);
             return;
         }
         if (block == temp_intersection){
-            resetJoinIntersection();
+            resetTempIntersection(false);
             showPopup("Cannot join the same intersection");
             return;
         }
         if (roadmapManager == temp_roadmap_manager){
-            resetJoinIntersection();
+            resetTempIntersection(false);
             showPopup("Cannot join intersections in the same map");
+            return;
+        }
+        if (list_iv_intersection.contains(iv_road_piece)){
+            resetTempIntersection(false);
+            showPopup("The intersection has already been joint");
             return;
         }
         System.out.println("--- Joining two intersections ---");
@@ -962,13 +980,29 @@ public class ControlGUI extends Application {
         System.out.println("RoadmapManager 1: "+temp_roadmap_manager.toString());
         System.out.println("Intersection 2: "+block.toString());
         System.out.println("RoadmapManager 2: "+roadmapManager.toString());
-        resetJoinIntersection();
+        iv_road_piece.setStyle("-fx-effect: innershadow(three-pass-box, "+join_intersection_colors[list_iv_intersection.size()/2]+", 10, 10, 0, 0);"); 
+        connectorDAO.joinIntersection(temp_intersection,temp_roadmap_manager,block,roadmapManager);
+        
+        this.list_iv_intersection.add(temp_iv_intersection);
+        this.list_iv_intersection.add(iv_road_piece);
+        
+        showPopup("Join successfully");
+      
+        resetTempIntersection(true);
         
     }
     
-    public void resetJoinIntersection(){
+    public void resetTempIntersection(boolean success){
+        if(!success){
+            temp_iv_intersection.setStyle("-fx-effect: None;"); 
+        }
         join_intersection_flag = false;
         temp_intersection = null;
         temp_roadmap_manager = null;
+        temp_iv_intersection = null;
+    }
+    
+    public void resetJoinIntersection(){
+        
     }
 }

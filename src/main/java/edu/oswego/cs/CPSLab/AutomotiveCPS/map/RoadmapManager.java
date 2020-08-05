@@ -24,14 +24,14 @@ import java.util.logging.Logger;
  */
 public class RoadmapManager {
 
-    private Roadmap map;
+    private RoadMap map;
     private List<Block> track;
     private List<Intersection> intersections;
     private List<Intersection> danglingIntersections;
 
     private int id;
 
-    public RoadmapManager(Roadmap map, ArrayList<Integer> pieceIDs, ArrayList<Boolean> reverses) {
+    public RoadmapManager(RoadMap map, ArrayList<Integer> pieceIDs, ArrayList<Boolean> reverses) {
         this.map = map;
         track = new ArrayList<Block>();
         intersections = new ArrayList<Intersection>();
@@ -39,11 +39,20 @@ public class RoadmapManager {
         generateTrack(pieceIDs, reverses);
     }
 
-    public Roadmap getMap() {
+    public Intersection getDanglingIntersection(int index) {
+        for (Intersection i : danglingIntersections) {
+            if (i.a == index) {
+                return i;
+            }
+        }
+        return null;
+    }
+
+    public RoadMap getMap() {
         return map;
     }
     
-    public boolean compare(Roadmap r) {
+    public boolean compare(RoadMap r) {
 //        Roadmap p = map;
         if (map.
                 equals(
@@ -340,7 +349,7 @@ public class RoadmapManager {
         }
     }
 
-    private class Intersection {
+    public class Intersection {
 
         private int a;
         private int b;

@@ -1,12 +1,8 @@
 package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
-import de.adesso.anki.AdvertisementData;
-import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.MessageListener;
-import de.adesso.anki.RoadmapScanner;
 import de.adesso.anki.Vehicle;
-import de.adesso.anki.messages.ChangeLaneMessage;
 import de.adesso.anki.messages.LocalizationIntersectionUpdateMessage;
 import de.adesso.anki.messages.LocalizationPositionUpdateMessage;
 import de.adesso.anki.messages.LocalizationTransitionUpdateMessage;
@@ -17,19 +13,17 @@ import de.adesso.anki.messages.SetSpeedMessage;
 import de.adesso.anki.roadmap.Section;
 import de.adesso.anki.roadmap.Roadmap;
 import de.adesso.anki.roadmap.roadpieces.IntersectionRoadpiece;
-import de.adesso.anki.roadmap.roadpieces.Roadpiece;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.EmergencyStop;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.Follow;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.FourWayIntersection;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.Overtake;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadMap;
 import java.io.IOException;
-import static java.lang.Thread.sleep;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.LinkedList;
@@ -75,7 +69,7 @@ public class CPSCar {
     private boolean scanDone;
     private ArrayList<Integer> pieceIDs;
     private ArrayList<Boolean> reverses;
-    private Roadmap tempMap;
+    private RoadMap tempMap;
     private Follow follow;
     private EmergencyStop emergStop;
     private Overtake over;
@@ -100,7 +94,7 @@ public class CPSCar {
         v.connect();
         v.sendMessage(new SdkModeMessage());
         try {
-            Thread.sleep(10);
+            Thread.sleep(50);
         } catch (InterruptedException ex) {
             Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -110,7 +104,7 @@ public class CPSCar {
         v.addMessageListener(LocalizationPositionUpdateMessage.class, lpuh);
         v.sendMessage(new LocalizationPositionUpdateMessage());
         try {
-            Thread.sleep(10);
+            Thread.sleep(50);
         } catch (InterruptedException ex) {
             Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -118,21 +112,21 @@ public class CPSCar {
         v.addMessageListener(LocalizationTransitionUpdateMessage.class, ltuh);
         v.sendMessage(new LocalizationTransitionUpdateMessage());
         try {
-            Thread.sleep(10);
+            Thread.sleep(50);
         } catch (InterruptedException ex) {
             Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
         }
-        LocalizationIntersectionUpdateHandler liuh = new LocalizationIntersectionUpdateHandler();
+        liuh = new LocalizationIntersectionUpdateHandler();
         v.addMessageListener(LocalizationIntersectionUpdateMessage.class, liuh);
         v.sendMessage(new LocalizationIntersectionUpdateMessage());
         try {
-            Thread.sleep(10);
+            Thread.sleep(50);
         } catch (InterruptedException ex) {
             Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
         }
         v.sendMessage(new SetOffsetFromRoadCenterMessage(-68));
         try {
-            Thread.sleep(10);
+            Thread.sleep(50);
         } catch (InterruptedException ex) {
             Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
         }
@@ -227,7 +221,7 @@ public class CPSCar {
         return pieceIDs.size();
     }
 
-    public Roadmap getMap() {
+    public RoadMap getMap() {
         return tempMap;
     }
 
@@ -520,18 +514,20 @@ public class CPSCar {
         @Override
         public void messageReceived(LocalizationIntersectionUpdateMessage m) {
             exiting = m.isExiting();
-            if (map != null) {
+            if (scanDone) {
                 if (exiting) {
                     atIntersection = false;
                     intersection.clear();
                 } else {
+                    
                     approachingIntersection = false;
+                    
+                    v.sendMessage(new SetSpeedMessage(0, 12500));
                     try {
-                        Thread.sleep(5);
+                        Thread.sleep(50);
                     } catch (InterruptedException ex) {
                         Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
                     }
-                    v.sendMessage(new SetSpeedMessage(0, 12500));
                     intersection.add(v.getAddress());
                     atIntersection = true;
                 }
@@ -637,7 +633,7 @@ public class CPSCar {
     private class MapScanner {
 
         private Vehicle vehicle;
-        private Roadmap roadmap;
+        private RoadMap roadmap;
         private boolean initReverse;
         private ArrayList<Integer> pieceIDs;
         private ArrayList<Boolean> reverses;
@@ -646,7 +642,7 @@ public class CPSCar {
 
         public MapScanner(Vehicle vehicle) {
             this.vehicle = vehicle;
-            this.roadmap = new Roadmap();
+            this.roadmap = new RoadMap();
             this.pieceIDs = new ArrayList<Integer>();
             this.reverses = new ArrayList<Boolean>();
         }
@@ -699,7 +695,7 @@ public class CPSCar {
             return roadmap.isComplete();
         }
 
-        public Roadmap getRoadmap() {
+        public RoadMap getRoadmap() {
             return roadmap;
         }
 
@@ -716,7 +712,7 @@ public class CPSCar {
         }
 
         public void reset() {
-            this.roadmap = new Roadmap();
+            this.roadmap = new RoadMap();
             this.lastPosition = null;
         }
 

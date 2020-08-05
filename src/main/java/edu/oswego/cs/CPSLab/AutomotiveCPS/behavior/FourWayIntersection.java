@@ -22,7 +22,7 @@ public class FourWayIntersection extends Behavior {
     public void run() {
         Queue<String> queue = car.getIntersectionList();
         String name = car.getAddress();
-        if (queue.element() == name) {
+        if (queue.element().equals(name)) {
             try {
                 System.out.println("Wait for 3 seconds... ");
                 Thread.sleep(3000);

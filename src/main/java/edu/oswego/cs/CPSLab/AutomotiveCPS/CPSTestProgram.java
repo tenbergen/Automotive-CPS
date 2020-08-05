@@ -25,7 +25,7 @@ public class CPSTestProgram {
      * @param args the command line arguments
      */
     public static void main(String[] args) throws IOException, InterruptedException {
-        System.out.println("Launching connector...");
+        /*System.out.println("Launching connector...");
         AnkiConnector anki = new AnkiConnector("192.168.1.101", 5000);
         System.out.println("...looking for cars...");
         List<Vehicle> vehicles = anki.findVehicles(); // Add the CPSCar class to AnkiConnector?
@@ -74,5 +74,6 @@ public class CPSTestProgram {
 //        for (CPSCar c : cars) {
 //            c.disconnect();
 //        }
+*/
     }
 }

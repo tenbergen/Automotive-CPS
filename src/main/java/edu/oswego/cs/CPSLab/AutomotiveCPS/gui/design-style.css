@@ -159,6 +159,5 @@ and open the template in the editor.
 }
 
 #road-piece-image-view:hover{
-    -fx-background-color: white;
     -fx-effect: innershadow(three-pass-box, red, 10, 10, 0, 0);
 }

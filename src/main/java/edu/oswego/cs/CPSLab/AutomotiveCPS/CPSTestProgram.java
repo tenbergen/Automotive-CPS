@@ -5,10 +5,15 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
 import de.adesso.anki.AnkiConnector;
 import de.adesso.anki.Vehicle;
+import de.adesso.anki.messages.SdkModeMessage;
+import de.adesso.anki.messages.SetSpeedMessage;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Random;
+import java.util.Scanner;
 
 /**
  *
@@ -34,10 +39,10 @@ public class CPSTestProgram {
             for (Vehicle v : vehicles) {
                 CPSCar c = new CPSCar(v);
                 cars.add(c);
-                Thread.sleep(100);
+                c.scanTrack();
             }
-          
-            // Roadmap Manager(s)  
+
+            // Roadmap Manager(s)
             List<RoadmapManager> managers = new ArrayList<>();
             
             while (true) {
@@ -47,19 +52,20 @@ public class CPSTestProgram {
                         for (RoadmapManager rm : managers) {
 //                            System.out.println(c.getMap().toString());
 //                            System.out.println(rm.getMap().toString());
-                            if (c.getMap().equals(rm.getMap())) {
+                            if (rm.compare(c.getMap())) {
                                 System.out.println("Same manager...");
                                 c.setRoadmapMannager(rm);
                             }
                         }
                         if (c.getManager() == null) {
                             System.out.println("New manager...");
-                            System.out.println(c.getMap());
+//                            System.out.println(c.getMap());
                             RoadmapManager rm = new RoadmapManager(c.getMap(), c.getPieceIDs(), c.getReverses());
                             managers.add(rm);
                             rm.setID(managers.indexOf(rm));
                             c.setRoadmapMannager(rm);
                         }
+                        c.sendMessage(new SetSpeedMessage(400, 100));
                     }
                 }
                 Thread.sleep(100);

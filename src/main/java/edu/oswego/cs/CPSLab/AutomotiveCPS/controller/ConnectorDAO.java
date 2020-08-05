@@ -353,5 +353,16 @@ public class ConnectorDAO {
         return maps;
     }
     
+    public RoadmapManager getRoadmapManager(Block block){
+        int index = 0;
+        for (MapDAO map: this.maps){          
+            if(map.containsBlock(block)){
+                break;
+            }
+            index++;
+        }
+        return this.managers.get(index);
+    }
+    
     
 }

@@ -157,3 +157,8 @@ and open the template in the editor.
 #scan-vehicles-grid{
     -fx-background-color: black;
 }
+
+#road-piece-image-view:hover{
+    -fx-background-color: white;
+    -fx-effect: innershadow(three-pass-box, red, 10, 10, 0, 0);
+}

@@ -65,7 +65,7 @@ public class MapDAO {
              * START piece.
              */
             if(Parameter.START_PIECE.contains(pieceId)){
-                this.array.add(Parameter.START_FINISH,i,j);
+                this.array.add(Parameter.START_FINISH,i,j,track);
                 if (track.getReverse()){
                     positive = !positive;
                     j--; 
@@ -89,7 +89,7 @@ public class MapDAO {
             if(Parameter.STRAIGHT_PIECE.contains(pieceId)){
                 if (direction){
                     //horizontal
-                    this.array.add(Parameter.STRAIGHT_HORIZONTAL,i,j);
+                    this.array.add(Parameter.STRAIGHT_HORIZONTAL,i,j,track);
                     if(positive){
                         j++;
                     }
@@ -98,7 +98,7 @@ public class MapDAO {
                     }
                 }
                 else{
-                    this.array.add(Parameter.STRAIGHT_VERTICAL,i,j);
+                    this.array.add(Parameter.STRAIGHT_VERTICAL,i,j,track);
                     if(positive){
                         i++;
                     }
@@ -115,13 +115,13 @@ public class MapDAO {
             if(Parameter.CURVED_PIECE.contains(pieceId)){
                 if(direction && positive){
                     if(track.getReverse()){
-                        this.array.add(Parameter.CURVED_SOUTH_WEST,i,j);
+                        this.array.add(Parameter.CURVED_SOUTH_WEST,i,j,track);
                         positive = true;
                         direction = false;
                         i++;
                     }
                     else{
-                        this.array.add(Parameter.CURVED_NORTH_WEST,i,j);
+                        this.array.add(Parameter.CURVED_NORTH_WEST,i,j,track);
                         positive = false;
                         direction = false;
                         i--;
@@ -129,13 +129,13 @@ public class MapDAO {
                 }
                 else if(direction && !positive){
                     if(track.getReverse()){
-                        this.array.add(Parameter.CURVED_NORTH_EAST,i,j);
+                        this.array.add(Parameter.CURVED_NORTH_EAST,i,j,track);
                         positive = false;
                         direction = false;
                         i--;
                     }
                     else{
-                        this.array.add(Parameter.CURVED_SOUTH_EAST,i,j);
+                        this.array.add(Parameter.CURVED_SOUTH_EAST,i,j,track);
                         positive = true;
                         direction = false;
                         i++;
@@ -143,13 +143,13 @@ public class MapDAO {
                 }
                 else if(!direction && positive){
                     if(track.getReverse()){
-                        this.array.add(Parameter.CURVED_NORTH_WEST,i,j);
+                        this.array.add(Parameter.CURVED_NORTH_WEST,i,j,track);
                         positive = false;
                         direction = true;
                         j--;
                     }
                     else{
-                        this.array.add(Parameter.CURVED_NORTH_EAST,i,j);
+                        this.array.add(Parameter.CURVED_NORTH_EAST,i,j,track);
                         positive = true;
                         direction = true;
                         j++;
@@ -157,13 +157,13 @@ public class MapDAO {
                 }
                 else if(!direction && !positive){
                     if(track.getReverse()){
-                        this.array.add(Parameter.CURVED_SOUTH_EAST,i,j);
+                        this.array.add(Parameter.CURVED_SOUTH_EAST,i,j,track);
                         positive = true;
                         direction = true;
                         j++;
                     }
                     else{
-                        this.array.add(Parameter.CURVED_SOUTH_WEST,i,j);
+                        this.array.add(Parameter.CURVED_SOUTH_WEST,i,j,track);
                         positive = false;
                         direction = true;
                         j--;
@@ -172,7 +172,7 @@ public class MapDAO {
                 continue;
             }
             if(Parameter.INTERSECTION_PIECE.contains(pieceId)){
-                this.array.add(Parameter.INTERSECTION,i,j);
+                this.array.add(Parameter.INTERSECTION,i,j,track);
                 if (direction){
                     if(positive){
                         j++;
@@ -213,5 +213,12 @@ public class MapDAO {
         }
     }
     
+    public Block getBlock(int i, int j){
+        return this.array.getBlock(i, j);
+    }
+    
+    public boolean containsBlock(Block block){
+        return this.tracks.contains(block);
+    }
     
 }

@@ -8,6 +8,9 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS.gui;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.ConnectorDAO;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.MapDAO;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.VehicleDAO;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.Block;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
+import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -36,6 +39,7 @@ import javafx.scene.image.ImageView;
 import javafx.scene.input.ClipboardContent;
 import javafx.scene.input.DataFormat;
 import javafx.scene.input.Dragboard;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.input.TransferMode;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
@@ -57,6 +61,10 @@ public class ControlGUI extends Application {
       
     //******** Map ********x
     private VBox vbox_map;
+    private HashMap<ImageView,Block> map_iv_block = new HashMap<>();
+    private boolean join_intersection_flag = false;
+    private Block temp_intersection;
+    private RoadmapManager temp_roadmap_manager;
     
     //******** Selected Car ********
     private UpdateRealTimeData updateRealTimeData;
@@ -844,13 +852,15 @@ public class ControlGUI extends Application {
                     if (board[i][j] == null) {
                         board[i][j] = "null";
                     }
-                    System.out.println(board[i][j]);
                     ImageView iv_road_piece = new ImageView(new Image(Parameter.PATH_MEDIA + "Track/" + board[i][j] + ".png"));
-                    //ImageView iv_road_piece = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Track/arrow-up.png"));
+                    //ImageView iv_road_piece = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Track/arrow-up.png"));                   
                     iv_road_piece.setFitHeight(size_piece);
                     iv_road_piece.setPreserveRatio(true);
                     iv_road_piece.setSmooth(true);
                     iv_road_piece.setCache(true);
+                    if (board[i][j].equals("IN")){
+                        initializeIntersectionPiece(iv_road_piece,map,i,j);                      
+                    }                 
                     one_row_map.getChildren().add(iv_road_piece);
                 }
                 map_GUI.getChildren().add(one_row_map);
@@ -860,4 +870,105 @@ public class ControlGUI extends Application {
         System.out.println("GUI - Draw Done");   
     }
     
+    public void initializeIntersectionPiece(ImageView iv_road_piece,MapDAO map,int i,int j){
+        iv_road_piece.setId("road-piece-image-view");
+        this.map_iv_block.put(iv_road_piece, map.getBlock(i, j));
+        iv_road_piece.addEventHandler(MouseEvent.MOUSE_CLICKED, new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent event) {
+                try {
+                    Block block = map_iv_block.get(iv_road_piece);
+                    RoadmapManager roadmapManager = connectorDAO.getRoadmapManager(block);
+                    System.out.println("Intersection: " + block.toString());
+                    System.out.println("RoadmapManager: " + roadmapManager.toString());
+                    
+                    if(join_intersection_flag){
+                        handleFirstJointIntersection(block,roadmapManager);
+                    }
+                    else{
+                        handleSecondJointIntersection(block,roadmapManager);
+                    }
+                    
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+    
+    public void handleFirstJointIntersection(Block block,RoadmapManager roadmapManager){
+        final Stage dialog = new Stage();
+        dialog.initModality(Modality.APPLICATION_MODAL);
+        dialog.initOwner(this.stage);
+        
+        VBox dialogVbox = new VBox(Parameter.BOX_VGAP);
+        dialogVbox.setAlignment(Pos.CENTER);
+        dialogVbox.setId("message-vbox");
+        
+        Text txt_message = new Text("Do you want to join intersections?");
+        txt_message.setId("message-text");
+        dialogVbox.getChildren().add(txt_message);
+        
+        HBox hbox_button = new HBox();
+        hbox_button.setAlignment(Pos.CENTER);
+        hbox_button.setSpacing(Parameter.BOX_HGAP);
+        
+        Button btn_yes = new Button("Yes");
+        btn_yes.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+                join_intersection_flag = true;
+                temp_intersection = block;
+                temp_roadmap_manager = roadmapManager;
+                dialog.close();
+                showPopup("Choose an intersection from another map to join");
+            }
+        });
+        hbox_button.getChildren().add(btn_yes);
+        
+        Button btn_no = new Button("No");
+        btn_no.setOnAction(new EventHandler<ActionEvent>() {
+            @Override
+            public void handle(ActionEvent e) {
+               dialog.close();
+            }
+        });
+        hbox_button.getChildren().add(btn_no);
+        dialogVbox.getChildren().add(hbox_button);      
+        
+        Scene dialogScene = new Scene(dialogVbox, Parameter.WIDTH_SCENE_POPUP, Parameter.HEIGHT_SCENE_POPUP);
+        dialogScene.getStylesheets().add(ControlGUI.class.getResource("design-style.css").toExternalForm());
+        dialog.setScene(dialogScene);
+        dialog.show();
+    }
+    
+    public void handleSecondJointIntersection(Block block,RoadmapManager roadmapManager){
+        if (!join_intersection_flag || temp_intersection == null || temp_roadmap_manager == null){
+            resetJoinIntersection();
+            return;
+        }
+        if (block == temp_intersection){
+            resetJoinIntersection();
+            showPopup("Cannot join the same intersection");
+            return;
+        }
+        if (roadmapManager == temp_roadmap_manager){
+            resetJoinIntersection();
+            showPopup("Cannot join intersections in the same map");
+            return;
+        }
+        System.out.println("--- Joining two intersections ---");
+        System.out.println("Intersection 1: "+temp_intersection.toString());
+        System.out.println("RoadmapManager 1: "+temp_roadmap_manager.toString());
+        System.out.println("Intersection 2: "+block.toString());
+        System.out.println("RoadmapManager 2: "+roadmapManager.toString());
+        resetJoinIntersection();
+        
+    }
+    
+    public void resetJoinIntersection(){
+        join_intersection_flag = false;
+        temp_intersection = null;
+        temp_roadmap_manager = null;
+    }
 }

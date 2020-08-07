@@ -92,6 +92,12 @@ public class CPSCar {
     public CPSCar(Vehicle v) {
         this.v = v;
         v.connect();
+        try {
+            Thread.sleep(50);
+        } catch (InterruptedException ex) {
+            Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
+        }
+        
         v.sendMessage(new SdkModeMessage());
         try {
             Thread.sleep(50);
@@ -322,14 +328,16 @@ public class CPSCar {
                             cars.add(parsed);
                             time.add(date.getTime());
                         }
-                        boolean condition1 = approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(true, (virtualId + 1) % map.size(), Integer.parseInt(parsed[1]));
+                        boolean condition1 = approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(true, (virtualId + 1) % map.size(), Integer.parseInt(parsed[1])) && !reverse;
                         boolean condition2 = atIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(true, (virtualId) % map.size(), Integer.parseInt(parsed[1]));
+                        boolean condition3 = approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(true, (virtualId + map.size() - 1) % map.size(), Integer.parseInt(parsed[1])) && reverse;
                         if (condition1 || condition2) {
                             intersection.add(parsed[0]);
                         }
                     } else {
-                        boolean condition1 = approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(false, (virtualId + 1) % map.size(), Integer.parseInt(parsed[1]));
+                        boolean condition1 = approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(false, (virtualId + 1) % map.size(), Integer.parseInt(parsed[1])) && !reverse;
                         boolean condition2 = atIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(false, (virtualId) % map.size(), Integer.parseInt(parsed[1]));
+                        boolean condition3 = approachingIntersection && Boolean.parseBoolean(parsed[8]) && map.sameIntersection(false, (virtualId + map.size() - 1) % map.size(), Integer.parseInt(parsed[1])) && reverse;
                         if (condition1 || condition2) {
                             cars.add(parsed);
                             time.add(date.getTime());

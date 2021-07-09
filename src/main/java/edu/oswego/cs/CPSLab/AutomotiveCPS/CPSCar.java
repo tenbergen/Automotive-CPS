@@ -1,22 +1,12 @@
 package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
+import de.adesso.anki.messages.*;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.*;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import de.adesso.anki.MessageListener;
 import de.adesso.anki.Vehicle;
-import de.adesso.anki.messages.LocalizationIntersectionUpdateMessage;
-import de.adesso.anki.messages.LocalizationPositionUpdateMessage;
-import de.adesso.anki.messages.LocalizationTransitionUpdateMessage;
-import de.adesso.anki.messages.Message;
-import de.adesso.anki.messages.SdkModeMessage;
-import de.adesso.anki.messages.SetOffsetFromRoadCenterMessage;
-import de.adesso.anki.messages.SetSpeedMessage;
 import de.adesso.anki.roadmap.Section;
-import de.adesso.anki.roadmap.Roadmap;
 import de.adesso.anki.roadmap.roadpieces.IntersectionRoadpiece;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.EmergencyStop;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.Follow;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.FourWayIntersection;
-import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.Overtake;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadMap;
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -54,6 +44,7 @@ public class CPSCar {
     private LocalizationPositionUpdateHandler lpuh;
     private LocalizationTransitionUpdateHandler ltuh;
     private LocalizationIntersectionUpdateHandler liuh;
+    private BatteryLevelResponseHandler blrh;
     private Thread t;
     private int locationId;
     private int pieceId;
@@ -64,6 +55,10 @@ public class CPSCar {
     private int prevLocationId;
     private int prevId;
     private int transition;
+    private Speedometer speedometer;
+    private int lane;
+    private int batteryLevel;
+    private int startingSpeed = 0;
 
     private MapScanner scan;
     private boolean scanDone;
@@ -85,7 +80,7 @@ public class CPSCar {
 //        lpuh = new LocalizationPositionUpdateHandler();
 //        v.addMessageListener(LocalizationPositionUpdateMessage.class, lpuh);
 //        v.sendMessage(new LocalizationPositionUpdateMessage());
-//        
+//
 //        Thread t = new Thread(new PositionUpdater());
 //        t.start();
 //    }
@@ -97,7 +92,7 @@ public class CPSCar {
         } catch (InterruptedException ex) {
             Logger.getLogger(CPSCar.class.getName()).log(Level.SEVERE, null, ex);
         }
-        
+
         v.sendMessage(new SdkModeMessage());
         try {
             Thread.sleep(50);
@@ -106,6 +101,11 @@ public class CPSCar {
         }
         virtualId = -1;
         transition = 0;
+
+        blrh = new BatteryLevelResponseHandler();
+        v.addMessageListener(BatteryLevelResponseMessage.class, blrh);
+        v.sendMessage(new BatteryLevelRequestMessage());
+
         lpuh = new LocalizationPositionUpdateHandler();
         v.addMessageListener(LocalizationPositionUpdateMessage.class, lpuh);
         v.sendMessage(new LocalizationPositionUpdateMessage());
@@ -162,6 +162,14 @@ public class CPSCar {
 //        } catch (Exception e){
 //            System.out.println("meh..." + e.getMessage());
 //        }
+    }
+
+    public void loopTrack() {
+
+        speedometer = new Speedometer(this);
+        DragRace race = new DragRace(this);
+        race.run();
+
     }
 
     public void scanTrack() {
@@ -227,9 +235,7 @@ public class CPSCar {
         return pieceIDs.size();
     }
 
-    public RoadMap getMap() {
-        return tempMap;
-    }
+    public RoadMap getMap() { return tempMap; }
 
     public void setRoadmapMannager(RoadmapManager rm) {
         this.map = rm;
@@ -260,9 +266,7 @@ public class CPSCar {
         return reverse;
     }
 
-    public int getSpeed() {
-        return speed;
-    }
+    public int getSpeed() { return speed; }
 
     public float getOffset() {
         return offset;
@@ -291,6 +295,16 @@ public class CPSCar {
     public Queue<String> getIntersectionList() {
         return intersection;
     }
+
+    public void setLane(int lane) { this.lane = lane; }
+
+    public int getLane() { return this.lane; }
+
+    public int getBatteryLevel() { return this.batteryLevel; }
+
+    //public Speedometer getSpeedometer() { return this.speedometer; }
+
+    public int getStartingSpeed() { return this.startingSpeed; }
 
     /**
      * Determines if a car that answered a broadcast is a) new, b) known, or c)
@@ -388,6 +402,7 @@ public class CPSCar {
         this.pieceId = lpuh.pieceId;
         this.speed = lpuh.speed;
         this.offset = lpuh.offset;
+        if (startingSpeed == 0) this.startingSpeed = this.speed;
         if (virtualId != -1) {
             follow.updateInfo();
             emergStop.updateInfo();
@@ -439,6 +454,14 @@ public class CPSCar {
         }
     }
 
+    private class BatteryLevelResponseHandler implements MessageListener<BatteryLevelResponseMessage> {
+
+        @Override
+        public void messageReceived(BatteryLevelResponseMessage batteryLevelResponseMessage) {
+            CPSCar.this.batteryLevel = batteryLevelResponseMessage.getBatteryLevel();
+        }
+    }
+
     /**
      * Handles the response from the vehicle from the
      * LocalizationPositionUpdateMessage. We need handler classes because
@@ -457,7 +480,7 @@ public class CPSCar {
             pieceId = m.getRoadPieceId();
             speed = m.getSpeed();
             offset = m.getOffsetFromRoadCenter();
-            System.out.println(v.getAdvertisement().getModel().name() + ":   Right now we are on: " + virtualId + ". Location: " + locationId + ". ");
+            //System.out.println(v.getAdvertisement().getModel().name() + ":   Right now we are on: " + virtualId + ". Location: " + locationId + ". ");
 //                    if (reverse) {
 //                        System.out.println(v.getAdvertisement().getModel().name() + ": true...");
 //                        try {
@@ -502,6 +525,14 @@ public class CPSCar {
 
         @Override
         public void messageReceived(LocalizationTransitionUpdateMessage m) {
+
+            try {
+                CPSCar.this.updatePosition();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            CPSCar.this.speedometer.calculateVelocity();
+
             transition = transition + 1;
             if (virtualId != -1) {
                 if (!reverse) {
@@ -527,9 +558,9 @@ public class CPSCar {
                     atIntersection = false;
                     intersection.clear();
                 } else {
-                    
+
                     approachingIntersection = false;
-                    
+
                     v.sendMessage(new SetSpeedMessage(0, 12500));
                     try {
                         Thread.sleep(50);
@@ -631,7 +662,7 @@ public class CPSCar {
         }
     }
 
-//disconnect - stop the thread
+    //disconnect - stop the thread
     public void disconnect() throws InterruptedException {
         v.disconnect();
         //receiver.stopMC();

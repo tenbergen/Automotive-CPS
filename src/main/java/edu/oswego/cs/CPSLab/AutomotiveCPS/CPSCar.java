@@ -2,6 +2,8 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS;
 
 import de.adesso.anki.messages.*;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.*;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.controller.VehicleDAO;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.gui.PositionTrackerOverlay;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadmapManager;
 import de.adesso.anki.MessageListener;
 import de.adesso.anki.Vehicle;
@@ -59,6 +61,8 @@ public class CPSCar {
     private int lane;
     private int batteryLevel;
     private int startingSpeed = 0;
+    private VehicleDAO vehicleDAO;
+    private PositionTrackerOverlay.MultithreadedTracker tracker;
 
     private MapScanner scan;
     private boolean scanDone;
@@ -155,6 +159,7 @@ public class CPSCar {
         emergStop = new EmergencyStop(this);
         over = new Overtake(this);
         fwi = new FourWayIntersection(this);
+        speedometer = new Speedometer(this);
 
         //      scanTrack();
 //        try {
@@ -166,7 +171,6 @@ public class CPSCar {
 
     public void loopTrack() {
 
-        speedometer = new Speedometer(this);
         DragRace race = new DragRace(this);
         race.run();
 
@@ -219,9 +223,7 @@ public class CPSCar {
         return v.getAddress();
     }
 
-    public boolean scanDone() {
-        return scanDone;
-    }
+    public boolean scanDone() { return scanDone; }
 
     public ArrayList<Integer> getPieceIDs() {
         return pieceIDs;
@@ -250,13 +252,9 @@ public class CPSCar {
         return v;
     }
 
-    public int getLocationId() {
-        return locationId;
-    }
+    public int getLocationId() { return locationId; }
 
-    public int getPieceId() {
-        return pieceId;
-    }
+    public int getPieceId() { return pieceId; }
 
     public int getVirtualId() {
         return virtualId;
@@ -302,9 +300,12 @@ public class CPSCar {
 
     public int getBatteryLevel() { return this.batteryLevel; }
 
-    //public Speedometer getSpeedometer() { return this.speedometer; }
+    public Speedometer getSpeedometer() { return this.speedometer; }
 
     public int getStartingSpeed() { return this.startingSpeed; }
+
+    public void setVehicleDAO(VehicleDAO vehicleDAO) { this.vehicleDAO = vehicleDAO; }
+
 
     /**
      * Determines if a car that answered a broadcast is a) new, b) known, or c)
@@ -532,7 +533,7 @@ public class CPSCar {
                 e.printStackTrace();
             }
             CPSCar.this.speedometer.calculateVelocity();
-
+            System.out.println("Velocity: " + CPSCar.this.speedometer.getVelocity());
             transition = transition + 1;
             if (virtualId != -1) {
                 if (!reverse) {

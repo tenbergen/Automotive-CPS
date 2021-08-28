@@ -41,6 +41,16 @@ task ankiConnectionTest(type: JavaExec) {
     main = 'edu.oswego.cs.CPSLab.AnkiConnectionTest'
 }
 
+task physicalVelocityDemo(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'edu.oswego.cs.CPSLab.AutomotiveCPS.PhysicalVelocityDemo'
+}
+
+task GUI(type: JavaExec) {
+    classpath = sourceSets.main.runtimeClasspath
+    main = 'edu.oswego.cs.CPSLab.AutomotiveCPS.gui.ConnectGUI'
+}
+
 sourceSets {
     main {
         resources {

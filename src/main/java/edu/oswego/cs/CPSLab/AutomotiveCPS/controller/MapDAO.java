@@ -25,9 +25,7 @@ public class MapDAO {
     public Customized2DArray getArray() {
         return array;
     }
-    public String[][] getBoard() {
-        return board;
-    }
+    public String[][] getBoard() { return board; }
 
     public void setTracks(List<Block> tracks) {
         this.tracks = tracks;

@@ -8,7 +8,6 @@ import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadPieceLength;
 
 /**
  * @author Gregory Maldonado
- * @since 06-10-2021
  */
 public class Speedometer extends Behavior {
     /**

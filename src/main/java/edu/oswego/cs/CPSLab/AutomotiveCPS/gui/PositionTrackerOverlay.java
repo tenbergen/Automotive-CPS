@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 /**
  * @author Gregory Maldonado
- * @since 07-15-2021
  *
  * JavaFX Application for displaying the MapGUI and placing JavaFX.Circles for tracking each vehicle on the track in real time
  */
@@ -71,7 +70,7 @@ public class PositionTrackerOverlay extends Application {
          * Note to developer : List<MapDAO> mapDAO should only contain 1 mapDAO. If there are other instances nearby and
          * the connectorDAO picks up another set of cars on a different map then that map will be stored in the mapDAO. If there are other maps
          * contained in the mapDAO, the position tracker will not work. This is because, I'm using the first mapDAO in the list, List<MapDAO>.index(0)
-         * -GM
+
          * */
 
         if (mapDAOs.size() != 0) this.mapSelected = mapDAOs.get(0);

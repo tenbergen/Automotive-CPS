@@ -110,7 +110,7 @@ public class ConnectorDAO {
                 String key = ""+v.getAdvertisement().getIdentifier();
                 System.out.print("Get car: "+v.getAdvertisement().getModel());
                 if (v.getAdvertisement().isCharging())
-                    continue;               
+                    continue;
                 addVehicle(v);   
             }
         }     

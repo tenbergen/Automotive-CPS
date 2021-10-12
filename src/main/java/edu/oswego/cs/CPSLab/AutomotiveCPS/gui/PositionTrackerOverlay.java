@@ -4,6 +4,7 @@ import java.awt.*;
 
 import de.adesso.anki.MessageListener;
 import de.adesso.anki.messages.LocalizationTransitionUpdateMessage;
+import de.adesso.anki.roadmap.Position;
 import de.adesso.anki.roadmap.roadpieces.StartRoadpiece;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.behavior.Speedometer;
@@ -22,10 +23,9 @@ import javafx.scene.layout.VBox;
 import javafx.scene.paint.Paint;
 import javafx.scene.shape.Circle;
 import javafx.stage.Stage;
-import java.util.ArrayList;
-import java.util.Arrays;
+
+import java.util.*;
 import java.util.List;
-import java.util.Random;
 import java.util.stream.Collectors;
 
 
@@ -49,15 +49,13 @@ public class PositionTrackerOverlay extends Application {
     private List<Integer[][]> listOfRoadPieceCenters;
     private List<Block> blocks;
     private static List<Integer> trackID;
-    private Integer[][][] formatedArray;
-    private List<Integer[][]> listOfFormatedRoadPieceCenters;
+    private Integer[][][] formattedArray;
+    private List<String> trackOrder ;
 
     // Javafx components
     private GridPane mapGridPane;
     private StackPane entireMapPane = new StackPane();
     private Pane circleTrackingPane = new Pane();
-
-    private Integer[][] roadPieceCenters;
 
     private boolean killThreads = false;
     private final Dimension SIZE = Toolkit.getDefaultToolkit().getScreenSize();
@@ -68,7 +66,6 @@ public class PositionTrackerOverlay extends Application {
         this.vehicles               = vehicles;
         this.mapDAOs                = mapDAOs;
         this.listOfRoadPieceCenters = roadPieceCenters;
-        this.roadPieceCenters       = roadPieceCenters.get(0);
 
         /*
          * Note to developer : List<MapDAO> mapDAO should only contain 1 mapDAO. If there are other instances nearby and
@@ -85,47 +82,16 @@ public class PositionTrackerOverlay extends Application {
                 .map(Block::getPieceId)
                 .collect(Collectors.toList());
 
+        trackOrder       = mapSelected.getArray().getKeys();
+        rearrangeArray();
+
         debug();
 
-
-        //rearrangeArray();
     }
 
     private void debug() {
         System.out.println(" RUNNING DEBUG MODE ");
-
-        System.out.println(Arrays.deepToString(mapSelected.getBoard()));
-        System.out.println(Arrays.toString(getRotatedMap()));
-
-    }
-
-    private String[] getRotatedMap() {
-        String[][] board = mapSelected.getBoard();
-        int rows         = board.length;
-        int cols         = board[0].length;
-
-        List<String> modifiedBoard = new ArrayList<>();
-        String[] rotatedBoard = new String[rows * cols];
-
-        for (int i = 0; i < rows; i++) {
-            for (int j = 0; j < cols; j++) {
-                modifiedBoard.add(board[i][j]);
-            }
-        }
-
-        int SFindex = modifiedBoard.indexOf("SF");
-        int spacing = modifiedBoard.size() - SFindex;
-
-        for (int i = 0; i < modifiedBoard.size(); i++) {
-            if (i < SFindex) {
-                int index = i + spacing;
-                rotatedBoard[index] = modifiedBoard.get(i);
-            } else {
-                int index = i - SFindex;
-                rotatedBoard[index] = modifiedBoard.get(i);
-            }
-        }
-        return rotatedBoard;
+        trackOrder.forEach(System.out::println);
     }
 
     public void setBlocks(List<Block> blocks) { this.blocks = blocks; }
@@ -154,6 +120,8 @@ public class PositionTrackerOverlay extends Application {
         killThreads = true;
     }
 
+
+
     /**
      * turns one-dimesional array into two-dimensitional
      */
@@ -163,17 +131,17 @@ public class PositionTrackerOverlay extends Application {
         int counter = 0;
         int rows = board.length;
         int cols = board[0].length;
-        formatedArray = new Integer[rows][cols][2];
+        formattedArray = new Integer[rows][cols][2];
         for (int i = 0; i < rows; i++) {
             for (int j = 0; j < cols; j++) {
-                formatedArray[i][j][0] = array[counter][0];
-                formatedArray[i][j][1] = array[counter][1];
+                formattedArray[i][j][0] = array[counter][0];
+                formattedArray[i][j][1] = array[counter][1];
                 counter ++ ;
             }
         }
 
         System.out.println("Array Rotation Method");
-        for (Integer[][] row : formatedArray) {
+        for (Integer[][] row : formattedArray) {
             for (Integer[] col : row) {
                 System.out.print(col[0] + ", " + col[1] + " |||");
             }
@@ -248,8 +216,8 @@ public class PositionTrackerOverlay extends Application {
 
         private CPSCar cpsCar;
         private Speedometer speedometer;
-        private double enteringVelocity;
-        private int trackIndex = 0;
+
+        private int trackIndex = 1;
 
         Circle tracker = new Circle();
 
@@ -257,7 +225,13 @@ public class PositionTrackerOverlay extends Application {
             this.cpsCar      = vehicle.getCpsCar();
             this.speedometer = cpsCar.getSpeedometer();
             tracker.setRadius(10);
-            tracker.setFill(Paint.valueOf("#000FFF"));;
+
+            Random obj = new Random();
+            int rand_num = obj.nextInt(0xffffff + 1);
+
+            String colorCode = String.format("#%06x", rand_num);
+
+            tracker.setFill(Paint.valueOf(colorCode));
             this.cpsCar.setVehicleDAO(vehicle);
         }
 
@@ -270,16 +244,25 @@ public class PositionTrackerOverlay extends Application {
 
             // If going backwards
                 // Then trackIndex *= -1
-
-            trackIndex += 1;
+            if (! Parameter.FINISH_PIECE.contains(cpsCar.getPieceId())) {
+                trackIndex += 1;
+            }
             if (trackIndex == mapSelected.getTracks().size() - 1) {
                 trackIndex = 0;
             }
 
-            System.out.println("CURRENT TRACK " + mapSelected.getTracks().get(trackIndex).getPiece().getType());
-            int randomTrack = new Random().nextInt(roadPieceCenters.length);
-            updatePosition(roadPieceCenters[randomTrack][0], roadPieceCenters[randomTrack][1] );
+            String location = trackOrder.get(trackIndex);
+            int arrX = Integer.parseInt(location.substring(0, location.indexOf('/')));
+            int arrY = Integer.parseInt(location.substring(location.indexOf('/') + 2));
 
+            int newX = PositionTrackerOverlay.this.formattedArray[arrX][arrY][0];
+            int newY = PositionTrackerOverlay.this.formattedArray[arrX][arrY][1];
+
+
+            System.out.println("CURRENT TRACK " + mapSelected.getTracks().get(trackIndex).getPiece().getType());
+            Random rm = new Random();
+            updatePosition(newX, newY );
+            //updatePosition(rm.nextInt(500), rm.nextInt(500) );
             this.debug();
         }
 
@@ -287,7 +270,6 @@ public class PositionTrackerOverlay extends Application {
         public void run() {
 
             while (! PositionTrackerOverlay.this.killThreads) {
-                this.enteringVelocity = speedometer.getVelocity();
                 this.speedometer.setTracker(this);
             }
         }

@@ -26,6 +26,7 @@ public class MapDAO {
         return array;
     }
     public String[][] getBoard() { return board; }
+    public Integer[] startingLocation;
 
     public void setTracks(List<Block> tracks) {
         this.tracks = tracks;
@@ -55,10 +56,10 @@ public class MapDAO {
         boolean positive = true;
         
         this.array = new Customized2DArray();
-        
+
         for (Block track : this.tracks){
             int pieceId = track.getPieceId();
-            
+
             /**
              * START piece.
              */
@@ -218,5 +219,7 @@ public class MapDAO {
     public boolean containsBlock(Block block){
         return this.tracks.contains(block);
     }
+
+    public void addStartingLocation(Integer[] location) {this.startingLocation = location; }
     
 }

@@ -119,7 +119,7 @@ public class MapGUI extends Application {
         for (Integer[] integers : trackPieceImageCenter.get(0)) {
             System.out.println(Arrays.toString(integers));
         }
-        stage.show();
+        //stage.show();
     }
 
     public Scene getScene() { return scene; }
@@ -158,6 +158,9 @@ public class MapGUI extends Application {
                     if (board[i][j] == null) {
                         board[i][j] = "null";
                     }
+                    if (board[i][j].equals("SF")) {
+                        map.addStartingLocation(new Integer[]{i, j});
+                    }
                     // draws track with pictures
                     ImageView iv_road_piece = new ImageView(new Image(Parameter.PATH_MEDIA + "Track/" + board[i][j] + ".png"));
                     //ImageView iv_road_piece = new ImageView(new Image("edu/oswego/cs/CPSLab/AutomotiveCPS/gui/img/Track/arrow-up.png"));
@@ -174,7 +177,6 @@ public class MapGUI extends Application {
                 map_GUI.getChildren().add(one_row_map);
             }
             vbox_map.getChildren().add(map_GUI);
-            System.out.println("Starting Coordinate" + size_piece);
             int currentXPos = startingCoordinate[0] + (size_piece / 2);
             int currentYPos = startingCoordinate[1] + (size_piece / 2);
 
@@ -191,7 +193,6 @@ public class MapGUI extends Application {
                     currentXPos += size_piece;
                     trackPieceImageCenter.get(trackPieceImageCenter.size() - 1)[arrayIndex][0] = currentXPos;
                     trackPieceImageCenter.get(trackPieceImageCenter.size() - 1)[arrayIndex][1] = currentYPos;
-                    System.out.println(currentXPos + ", " + currentYPos);
                     arrayIndex += 1;
                 }
                 currentYPos += size_piece;
@@ -328,4 +329,5 @@ public class MapGUI extends Application {
         temp_roadmap_manager = null;
         temp_iv_intersection = null;
     }
+
 }

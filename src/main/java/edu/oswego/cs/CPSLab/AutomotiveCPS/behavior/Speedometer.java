@@ -3,11 +3,11 @@ package edu.oswego.cs.CPSLab.AutomotiveCPS.behavior;
 import de.adesso.anki.roadmap.roadpieces.FinishRoadpiece;
 import de.adesso.anki.roadmap.roadpieces.Roadpiece;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.CPSCar;
+import edu.oswego.cs.CPSLab.AutomotiveCPS.gui.PositionTrackerOverlay;
 import edu.oswego.cs.CPSLab.AutomotiveCPS.map.RoadPieceLength;
 
 /**
  * @author Gregory Maldonado
- * @since 06-10-2021
  */
 public class Speedometer extends Behavior {
     /**
@@ -24,6 +24,7 @@ public class Speedometer extends Behavior {
     private int startingLane = 0;
     private double runningVelocitySum = 0;
     private int velocityUpdates = 0;
+    private PositionTrackerOverlay.MultithreadedTracker tracker;
 
     public Speedometer(CPSCar v) {
         super(v);
@@ -116,7 +117,11 @@ public class Speedometer extends Behavior {
             runningVelocitySum += this.velocity;
             velocityUpdates ++;
         }
+        if (tracker != null) tracker.transition();
+    }
 
+    public void setTracker(PositionTrackerOverlay.MultithreadedTracker tracker) {
+        this.tracker = tracker;
     }
 
     public double getVelocity() { return this.velocity; }

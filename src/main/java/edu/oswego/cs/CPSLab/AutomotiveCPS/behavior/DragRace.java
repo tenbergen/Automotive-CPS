@@ -30,6 +30,7 @@ public class DragRace extends Behavior {
 
         fld = new FinishLineDetector();
         prh = new PingResponseHandler();
+        v = car.getVehicle();
         prestage();
     }
 
@@ -77,7 +78,7 @@ public class DragRace extends Behavior {
         } catch (InterruptedException ie) {
 
         }
-        v.sendMessage(new SetSpeedMessage(1500, 1000)); //race
+        v.sendMessage(new SetSpeedMessage(500, 500)); //race
 
         while (!fld.stop ) {    //stop at finish line
             try {

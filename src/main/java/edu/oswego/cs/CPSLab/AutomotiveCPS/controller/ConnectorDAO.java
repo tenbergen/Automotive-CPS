@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 /**
  *
@@ -93,8 +94,9 @@ public class ConnectorDAO {
             VehicleDAO vehicle = new VehicleDAO();
             vehicle.setCpsCar(new CPSCar(v));
             vehicle.setImg(Parameter.PATH_MEDIA+"Vehicle/" +v.getAdvertisement().getModel()+".png");
-            
-            this.vehicles.add(vehicle);
+            if (! vehicle.getCpsCar().getVehicle().getAdvertisement().isCharging()) {
+                this.vehicles.add(vehicle);
+            }
         }
         catch(Exception e){
             e.printStackTrace();
@@ -108,7 +110,7 @@ public class ConnectorDAO {
                 String key = ""+v.getAdvertisement().getIdentifier();
                 System.out.print("Get car: "+v.getAdvertisement().getModel());
                 if (v.getAdvertisement().isCharging())
-                    continue;               
+                    continue;
                 addVehicle(v);   
             }
         }     
@@ -124,7 +126,11 @@ public class ConnectorDAO {
             for (Vehicle v : this.scanningVehicles) {
                 System.out.println("Get car: "+v.getAdvertisement().getModel());
             }
-            
+            // Excludes vehicles that are charging
+            this.scanningVehicles = this.scanningVehicles.stream()
+                    .filter( (vehicle) -> ! (vehicle.getAdvertisement().isCharging()) )
+                    .collect(Collectors.toList());
+
         } catch (Exception ex) {
             Logger.getLogger(ConnectorDAO.class.getName()).log(Level.SEVERE, null, ex);
         }

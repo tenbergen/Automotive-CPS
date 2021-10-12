@@ -93,6 +93,13 @@ and open the template in the editor.
     -fx-fill: black; 
 }
 
+#map-heading-text {
+    -fx-font-size: 40px;
+    -fx-font-weight: bold;
+    -fx-effect: innershadow( three-pass-box , #ff9600 , 6, 0.0 , 0 , 2 );
+    -fx-fill: black;
+}
+
 #road-type-text{
     -fx-font-family: "Arial Black";
     -fx-font-size: 18px;
@@ -160,4 +167,8 @@ and open the template in the editor.
 
 #road-piece-image-view:hover{
     -fx-effect: innershadow(three-pass-box, red, 10, 10, 0, 0);
+}
+
+#testing-image {
+    -fx-background-color: black;
 }

@@ -29,6 +29,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Scene;
+import javafx.scene.SubScene;
 import javafx.scene.control.Button;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
@@ -70,7 +71,10 @@ public class ControlGUI extends Application {
     private ImageView temp_iv_intersection;
     private List<ImageView> list_iv_intersection = new ArrayList<>();   
     private String[] join_intersection_colors = {"yellow", "green", "blue"};
-    
+    private GridPane mapGrid;
+    private PositionTrackerOverlay trackerOverlay;
+    private List<Integer[][]> imageCenters;
+
     //******** Selected Car ********
     private UpdateRealTimeData updateRealTimeData;
     private Text txt_vehicle_name;
@@ -82,7 +86,7 @@ public class ControlGUI extends Application {
     //******** List of Vehicles ********
     private ListView<VehicleDAO> lv_vehicles = new ListView<>();
     private ObservableList<VehicleDAO> observable_list_vehicles;
-     
+
     //******** Behavior Drag & Drop ********
     private final ObjectProperty<TreeCell<String>> dragSource = new SimpleObjectProperty<>();
     private static final DataFormat JAVA_FORMAT = new DataFormat("application/x-java-serialized-object");
@@ -189,40 +193,65 @@ public class ControlGUI extends Application {
             @Override
             public void handle(ActionEvent e) {
                 System.out.println("GUI - Scan Track ...");
-                vbox_map.getChildren().clear();
+                //vbox_map.getChildren().clear();
                 
-                Text txt_map = new Text("Map");
-                txt_map.setTextAlignment(TextAlignment.CENTER);
-                txt_map.setId("heading1-text");
-                vbox_map.getChildren().add(txt_map);
-                
+//                Text txt_map = new Text("Map");
+//                txt_map.setTextAlignment(TextAlignment.CENTER);
+//                txt_map.setId("heading1-text");
+//                vbox_map.getChildren().add(txt_map);
+//
                 vbox_list_vehicles.getChildren().remove(btn_scan_track);
                 
                 Stage dialog = loadingPopup("Please wait until scanning is finished");                              
+                //Thread started after scan track button is pressed
 
-                Thread name = new Thread() {
-                    @Override
-                    public void run() {
-                        connectorDAO.scanTrack();
-                        while(!connectorDAO.isScanTrackComplete()){
-                            try {
-                                sleep(100);
-                            } catch (InterruptedException ex) {
-                                Logger.getLogger(ControlGUI.class.getName()).log(Level.SEVERE, null, ex);
-                            }
+                Thread createMap = new Thread(() -> {
+                    connectorDAO.scanTrack();
+                    while(!connectorDAO.isScanTrackComplete()){
+                        try {
+                            sleep(100);
+                        } catch (InterruptedException ex) {
+                            Logger.getLogger(ControlGUI.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        System.out.println("GUI - Thread is DONE");
-                        Platform.runLater(new Runnable() {
-                            @Override
-                            public void run() {                             
-                                drawTrack();
-                                dialog.close();
-                            }
-                        });
-
                     }
-                };
-                name.start();
+                    System.out.println("GUI - Thread is DONE");
+                    Platform.runLater(() -> {
+                        Stage mapStage = new Stage();
+                        MapGUI mapGUI = new MapGUI(connectorDAO);
+                        try {
+                            mapGUI.start(mapStage);
+                            mapGrid = mapGUI.getGrid();
+                            imageCenters = mapGUI.getImageCenters();
+
+                        } catch (Exception ex) { ex.printStackTrace(); }
+//                            //drawTrack();
+//                            dialog.close();
+                    });
+
+                });
+
+                // Thread to track vehicles on the map
+                Thread trackMap = new Thread( () -> {
+                    // Javafx application entry point for tracking
+                    Platform.runLater(() -> {
+                        Stage trackingStage = new Stage();
+                        trackerOverlay = new PositionTrackerOverlay(lv_vehicles.getItems(), connectorDAO.getMaps(), mapGrid, imageCenters);
+                        try {
+                            trackerOverlay.start(trackingStage);
+                        } catch (Exception ex) {
+                            ex.printStackTrace();
+                        }
+                    });
+                });
+
+                dialog.close();
+                createMap.start();
+                try {
+                    createMap.join();
+                } catch (InterruptedException ex) {
+                    ex.printStackTrace();
+                }
+                trackMap.start();
                 
             }
         });
@@ -569,20 +598,18 @@ public class ControlGUI extends Application {
         //***************************************************
         //*********************** Map ***********************
         //***************************************************
-        
-        this.vbox_map = new VBox();
-        this.vbox_map.setAlignment(Pos.TOP_CENTER);
-        this.vbox_map.setSpacing(Parameter.BOX_VGAP);
-        
-        Text txt_map = new Text("Map");
-        txt_map.setTextAlignment(TextAlignment.CENTER);
-        txt_map.setId("heading1-text");
-        vbox_map.getChildren().add(txt_map);
-        
-        grid.add(vbox_map, 2,0);
-        
-        
-        
+//
+//        this.vbox_map = new VBox();
+//        this.vbox_map.setAlignment(Pos.TOP_CENTER);
+//        this.vbox_map.setSpacing(Parameter.BOX_VGAP);
+//
+//        Text txt_map = new Text("Map");
+//        txt_map.setTextAlignment(TextAlignment.CENTER);
+//        txt_map.setId("heading1-text");
+//        vbox_map.getChildren().add(txt_map);
+//
+//        grid.add(vbox_map, 2,0);
+
         //***************************************************
         //###################### SCENE ######################
         //***************************************************
@@ -629,14 +656,13 @@ public class ControlGUI extends Application {
     private void updateSelectedVehicle(VehicleDAO vehicle){
         
         connectorDAO.setSelectedVehicle(vehicle);
-        
+        if ( trackerOverlay != null ) trackerOverlay.setVehicleSelected(vehicle);
         //Information
         txt_vehicle_name.setText(""+vehicle.getCpsCar().getVehicle());
         iv_vehicle_thumbnail.setImage(new Image(vehicle.getImg()));
-        
+
         //Control
         txt_control_parameter_offset.setText(""+vehicle.getCpsCar().getOffset());
-        txt_control_parameter_speed.setText(""+vehicle.getCpsCar().getSpeed());
         
         if(vehicle.getCpsCar().getVehicle().getAdvertisement().isCharging())
             txt_control_parameter_battery.setText("Charging");
@@ -874,7 +900,8 @@ public class ControlGUI extends Application {
             }
             vbox_map.getChildren().add(map_GUI);
         }
-        System.out.println("GUI - Draw Done");   
+        System.out.println("GUI - Draw Done");
+        //MapGUI mapGUI = new MapGUI(connectorDAO);
     }
     
     public void initializeIntersectionPiece(ImageView iv_road_piece,MapDAO map,int i,int j){

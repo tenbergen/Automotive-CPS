@@ -55,7 +55,7 @@ public class Customized2DArray {
             int ny = this.col.get(k)+j_gap;
             this.row.set(k, nx);
             this.col.set(k, ny);
-            this.keys.add(k,nx+"//"+ny);           
+            this.keys.add(k,nx+"//"+ny);
         }      
         this.normalize = true;
         
@@ -111,4 +111,7 @@ public class Customized2DArray {
         }
         return j_min;
     }
+
+    public List<String> getKeys() { return keys; }
+
 }
